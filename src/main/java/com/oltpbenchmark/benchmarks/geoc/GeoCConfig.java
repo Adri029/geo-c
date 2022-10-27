@@ -32,7 +32,9 @@ public final class GeoCConfig {
     public final static int configWhseCount = 1;
     public final static int configItemCount = 100000; // tpc-c std = 100,000
     public final static int configDistPerWhse = 10; // tpc-c std = 10
-    public final static int configCustPerDist = 3000; // tpc-c std = 3,000
+    // It should be at minimum 1000, because of the customer name generator.
+    public final static int configCustPerDist = 1000; // tpc-c std = 3,000; 
+    public final static int configIndPerCust = 10; 
 
     /**
      * An invalid item id used to rollback a new order transaction.
