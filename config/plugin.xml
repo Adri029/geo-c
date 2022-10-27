@@ -1,5 +1,6 @@
 <?xml version="1.0"?>
 <plugins>
+    <plugin name="geoc">com.oltpbenchmark.benchmarks.geoc.GeoCBenchmark</plugin>
     <plugin name="tpcc">com.oltpbenchmark.benchmarks.tpcc.TPCCBenchmark</plugin>
     <plugin name="tpch">com.oltpbenchmark.benchmarks.tpch.TPCHBenchmark</plugin>
     <plugin name="tatp">com.oltpbenchmark.benchmarks.tatp.TATPBenchmark</plugin>
