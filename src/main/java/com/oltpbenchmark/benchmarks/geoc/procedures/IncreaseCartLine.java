@@ -64,22 +64,22 @@ public class IncreaseCartLine extends GeoCProcedure {
                     "   AND S_W_ID = ? FOR UPDATE");
 
     public final SQLStmt stmtCreateCartLineSQL = new SQLStmt(
-            "INSERT INTO " + GeoCConstants.TABLENAME_CARTLINE +
+            "INSERT INTO " + GeoCConstants.TABLENAME_SHOPPING_CART_LINE +
                     " (_SCL_C_ID, _SCL_D_ID, _SCL_W_ID, _SCL_I_ID, _SCL_SUPPLY_W_ID, _SCL_DELIVERY_D, _SCL_QUANTITY, _SCL_AMOUNT, _SCL_DIST_INFO, _SCL_NUMBER) "
                     +
-                    " VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)");
+                    " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
     public final SQLStmt stmtUpdateCartLineSQL = new SQLStmt(
-            "UPDATE " + GeoCConstants.TABLENAME_CARTLINE +
-                    " SET _SCL_QUANTITY = %s, _SCL_AMOUNT = %s WHERE _SCL_W_ID = %s AND _SCL_D_ID = %s AND _SCL_C_ID = %s AND _SCL_I_ID = %s");
+            "UPDATE " + GeoCConstants.TABLENAME_SHOPPING_CART_LINE +
+                    " SET _SCL_QUANTITY = ?, _SCL_AMOUNT = ? WHERE _SCL_W_ID = ? AND _SCL_D_ID = ? AND _SCL_C_ID = ? AND _SCL_I_ID = ?");
 
     public final SQLStmt stmtGetLastCartLineSQL = new SQLStmt(
-            "SELECT max(_SCL_NUMBER) AS LAST_LINE FROM " + GeoCConstants.TABLENAME_CARTLINE +
-                    " WHERE _SCL_W_ID = %s AND _SCL_D_ID = %s AND _SCL_C_ID = %s");
+            "SELECT max(_SCL_NUMBER) AS LAST_LINE FROM " + GeoCConstants.TABLENAME_SHOPPING_CART_LINE +
+                    " WHERE _SCL_W_ID = ? AND _SCL_D_ID = ? AND _SCL_C_ID = ?");
 
     public final SQLStmt stmtCheckItemInCartSQL = new SQLStmt(
-            "SELECT _SCL_QUANTITY FROM " + GeoCConstants.TABLENAME_CARTLINE +
-                    " WHERE _SCL_W_ID = %s AND _SCL_D_ID = %s AND _SCL_C_ID = %s AND _SCL_I_ID = %s");
+            "SELECT _SCL_QUANTITY FROM " + GeoCConstants.TABLENAME_SHOPPING_CART_LINE +
+                    " WHERE _SCL_W_ID = ? AND _SCL_D_ID = ? AND _SCL_C_ID = ? AND _SCL_I_ID = ?");
 
     public void run(Connection conn, Random gen, int terminalWarehouseID, int numWarehouses,
             int terminalDistrictLowerID, int terminalDistrictUpperID, GeoCWorker w) throws SQLException {
@@ -120,7 +120,7 @@ public class IncreaseCartLine extends GeoCProcedure {
 
         getWarehouse(conn, w_id);
 
-        int d_next_o_id = getDistrict(conn, w_id, d_id);
+        getDistrict(conn, w_id, d_id);
 
         Timestamp _scl_delivery_d = Timestamp.valueOf(LocalDateTime.now());
 
@@ -137,14 +137,18 @@ public class IncreaseCartLine extends GeoCProcedure {
             float _scl_amount = _scl_quantity * i_price;
 
             if (inCartQnty != 0){
-                executeUpdateCartLine(conn, _scl_quantity, inCartQnty, _scl_supply_w_id, d_id, c_id, _scl_i_id);
+                executeUpdateCartLine(conn, _scl_quantity, _scl_amount, _scl_supply_w_id, d_id, c_id, _scl_i_id);
             }
 
             Stock s = getStock(conn, _scl_supply_w_id, _scl_i_id, _scl_quantity);
 
+            if (s.s_quantity < _scl_quantity){
+                /*TODO abort*/
+            }
+
             String ol_dist_info = getDistInfo(d_id, s);
 
-            int next_id = getNextItemID(conn, w_id, d_id, c_id, _scl_i_id);
+            int next_id = getNextItemID(conn, w_id, d_id, c_id);
 
             stmtCreateCartLine.setInt(1, c_id);
             stmtCreateCartLine.setInt(2, d_id);
@@ -157,24 +161,15 @@ public class IncreaseCartLine extends GeoCProcedure {
             stmtCreateCartLine.setString(9, ol_dist_info);
             stmtCreateCartLine.setInt(10, next_id);
 
-            int s_remote_cnt_increment;
-
-            if (_scl_supply_w_id == w_id) {
-                s_remote_cnt_increment = 0;
-            } else {
-                s_remote_cnt_increment = 1;
-            }
-
             stmtCreateCartLine.execute();
-
         }
 
     }
 
-    private void executeUpdateCartLine(Connection conn, int _scl_quantity, int _scl_amount, int w_id, int d_id, int c_id, int _scl_i_id){
+    private void executeUpdateCartLine(Connection conn, int _scl_quantity, float _scl_amount, int w_id, int d_id, int c_id, int _scl_i_id) throws SQLException{
         try (PreparedStatement stmtUpdateCartLine = this.getPreparedStatement(conn, this.stmtUpdateCartLineSQL)){
             stmtUpdateCartLine.setInt(1, _scl_quantity);
-            stmtUpdateCartLine.setInt(2, _scl_amount);
+            stmtUpdateCartLine.setFloat(2, _scl_amount);
             stmtUpdateCartLine.setInt(3, w_id);
             stmtUpdateCartLine.setInt(4, d_id);
             stmtUpdateCartLine.setInt(5, c_id);
@@ -183,7 +178,7 @@ public class IncreaseCartLine extends GeoCProcedure {
         }
     }
 
-    private int getItemInCartQuantity(Connection conn, int w_id, int d_id, int c_id, int _scl_i_id){
+    private int getItemInCartQuantity(Connection conn, int w_id, int d_id, int c_id, int _scl_i_id) throws SQLException{
         try (PreparedStatement stmtCheckItemInCart = this.getPreparedStatement(conn, this.stmtCheckItemInCartSQL)){
             stmtCheckItemInCart.setInt(1, w_id);
             stmtCheckItemInCart.setInt(2, d_id);
@@ -191,20 +186,19 @@ public class IncreaseCartLine extends GeoCProcedure {
             stmtCheckItemInCart.setInt(4, _scl_i_id);
             try (ResultSet rs = stmtCheckItemInCart.executeQuery()) {
                 if (!rs.next()){
-                   return 0;
+                    return 0;
+                }else{
+                    return rs.getInt("_SCL_QUANTITY");
                 }
-
-                return rs.getInt("_SCL_QUANTITY");
             }
         }
     }
 
-    private int getNextItemID(Connection conn, int w_id, int d_id, int c_id, int _scl_i_id){
+    private int getNextItemID(Connection conn, int w_id, int d_id, int c_id) throws SQLException{
         try(PreparedStatement stmtGetLastCartLine = this.getPreparedStatement(conn, this.stmtGetLastCartLineSQL)){
             stmtGetLastCartLine.setInt(1, w_id);
             stmtGetLastCartLine.setInt(2, d_id);
             stmtGetLastCartLine.setInt(3, c_id);
-            stmtGetLastCartLine.setInt(4, _scl_i_id);
             try (ResultSet rs = stmtGetLastCartLine.executeQuery()) {
                 if (!rs.next()){
                     throw new UserAbortException("W_ID=" + w_id + " D_ID=" + d_id + " C_ID=" + c_id + " not found!");
@@ -252,12 +246,6 @@ public class IncreaseCartLine extends GeoCProcedure {
                 s.s_dist_09 = rs.getString("S_DIST_09");
                 s.s_dist_10 = rs.getString("S_DIST_10");
 
-                if (s.s_quantity - ol_quantity >= 10) {
-                    s.s_quantity -= ol_quantity;
-                } else {
-                    s.s_quantity += -ol_quantity + 91;
-                }
-
                 return s;
             }
         }
@@ -269,7 +257,7 @@ public class IncreaseCartLine extends GeoCProcedure {
             try (ResultSet rs = stmtGetItem.executeQuery()) {
                 if (!rs.next()) {
                     // This is (hopefully) an expected error: this is an expected new order rollback
-                    throw new UserAbortException("EXPECTED new order rollback: I_ID=" + ol_i_id + " not found!");
+                    throw new UserAbortException("EXPECTED Increase Cart Line rollback: I_ID=" + ol_i_id + " not found!");
                 }
 
                 return rs.getFloat("I_PRICE");
