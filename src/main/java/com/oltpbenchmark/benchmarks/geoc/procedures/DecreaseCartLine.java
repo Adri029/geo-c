@@ -94,12 +94,10 @@ public class DecreaseCartLine extends GeoCProcedure {
 
         getDistrict(conn, w_id, d_id);
 
-        int _scl_quantity = removeQuantity;
-
         int _scl_i_id = getItemToDecrease(conn, w_id, d_id, c_id, item);
 
         int inCartQnty = getItemInCartQuantity(conn, w_id, d_id, c_id, _scl_i_id);
-        _scl_quantity -= inCartQnty;
+        int _scl_quantity = inCartQnty - removeQuantity;
 
         // this may occasionally error and that's ok!
         float i_price = getItemPrice(conn, _scl_i_id);
