@@ -18,126 +18,126 @@
 package com.oltpbenchmark.benchmarks.geoc.procedures;
 
 import com.oltpbenchmark.api.SQLStmt;
-import com.oltpbenchmark.benchmarks.geoc.GeoCConfig;
 import com.oltpbenchmark.benchmarks.geoc.GeoCConstants;
 import com.oltpbenchmark.benchmarks.geoc.GeoCUtil;
 import com.oltpbenchmark.benchmarks.geoc.GeoCWorker;
+import com.oltpbenchmark.benchmarks.geoc.pojo.ShoppingCartLine;
 import com.oltpbenchmark.benchmarks.geoc.pojo.Stock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.*;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
-public class NewOrder extends GeoCProcedure {
+public class ApproveCart extends GeoCProcedure {
 
-    private static final Logger LOG = LoggerFactory.getLogger(NewOrder.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ApproveCart.class);
 
     public final SQLStmt stmtGetCustSQL = new SQLStmt(
             "SELECT C_DISCOUNT, C_LAST, C_CREDIT" +
-            "  FROM " + GeoCConstants.TABLENAME_CUSTOMER +
-            " WHERE C_W_ID = ? " +
-            "   AND C_D_ID = ? " +
-            "   AND C_ID = ?");
+                    "  FROM " + GeoCConstants.TABLENAME_CUSTOMER +
+                    " WHERE C_W_ID = ? " +
+                    "   AND C_D_ID = ? " +
+                    "   AND C_ID = ?");
 
     public final SQLStmt stmtGetWhseSQL = new SQLStmt(
             "SELECT W_TAX " +
-            "  FROM " + GeoCConstants.TABLENAME_WAREHOUSE +
-            " WHERE W_ID = ?");
+                    "  FROM " + GeoCConstants.TABLENAME_WAREHOUSE +
+                    " WHERE W_ID = ?");
 
     public final SQLStmt stmtGetDistSQL = new SQLStmt(
             "SELECT D_NEXT_O_ID, D_TAX " +
-            "  FROM " + GeoCConstants.TABLENAME_DISTRICT +
-            " WHERE D_W_ID = ? AND D_ID = ? FOR UPDATE");
+                    "  FROM " + GeoCConstants.TABLENAME_DISTRICT +
+                    " WHERE D_W_ID = ? AND D_ID = ? FOR UPDATE");
 
-    public final SQLStmt stmtInsertNewOrderSQL = new SQLStmt(
-            "INSERT INTO " + GeoCConstants.TABLENAME_NEWORDER +
-            " (NO_O_ID, NO_D_ID, NO_W_ID) " +
-            " VALUES ( ?, ?, ?)");
+    public final SQLStmt stmtGetSupervisorFromCustomerSQL = new SQLStmt(
+            "SELECT _C_IND_ID FROM " + GeoCConstants.TABLENAME_CUSTOMER +
+                    " WHERE C_W_ID = ? AND C_D_ID = ? AND C_ID = ?");
+
+    public final SQLStmt stmtGetCartLinesSQL = new SQLStmt(
+            "SELECT * FROM " + GeoCConstants.TABLENAME_SHOPPING_CART_LINE +
+                    " WHERE _SCL_W_ID = ? AND _SCL_D_ID = ? AND _SCL_C_ID = ?");
 
     public final SQLStmt stmtUpdateDistSQL = new SQLStmt(
             "UPDATE " + GeoCConstants.TABLENAME_DISTRICT +
-            "   SET D_NEXT_O_ID = D_NEXT_O_ID + 1 " +
-            " WHERE D_W_ID = ? " +
-            "   AND D_ID = ?");
+                    "   SET D_NEXT_O_ID = D_NEXT_O_ID + 1 " +
+                    " WHERE D_W_ID = ? " +
+                    "   AND D_ID = ?");
+
+    public final SQLStmt stmtInsertNewOrderSQL = new SQLStmt(
+            "INSERT INTO " + GeoCConstants.TABLENAME_NEWORDER +
+                    " (NO_O_ID, NO_D_ID, NO_W_ID) " +
+                    " VALUES ( ?, ?, ?)");
 
     public final SQLStmt stmtInsertOOrderSQL = new SQLStmt(
             "INSERT INTO " + GeoCConstants.TABLENAME_OPENORDER +
-            " (O_ID, O_D_ID, O_W_ID, O_C_ID, O_ENTRY_D, O_OL_CNT, O_ALL_LOCAL)" +
-            " VALUES (?, ?, ?, ?, ?, ?, ?)");
-
-    public final SQLStmt stmtGetItemSQL = new SQLStmt(
-            "SELECT I_PRICE, I_NAME , I_DATA " +
-            "  FROM " + GeoCConstants.TABLENAME_ITEM +
-            " WHERE I_ID = ?");
+                    " (O_ID, O_D_ID, O_W_ID, O_C_ID, O_ENTRY_D, O_OL_CNT, O_ALL_LOCAL)" +
+                    " VALUES (?, ?, ?, ?, ?, ?, ?)");
 
     public final SQLStmt stmtGetStockSQL = new SQLStmt(
-            "SELECT S_QUANTITY, S_DATA, S_DIST_01, S_DIST_02, S_DIST_03, S_DIST_04, S_DIST_05, " +
+            "SELECT S_QUANTITY, S_YTD, S_ORDER_CNT, S_REMOTE_CNT, S_DIST_01, S_DIST_02, S_DIST_03, S_DIST_04, S_DIST_05, " +
             "       S_DIST_06, S_DIST_07, S_DIST_08, S_DIST_09, S_DIST_10" +
-            "  FROM " + GeoCConstants.TABLENAME_STOCK +
-            " WHERE S_I_ID = ? " +
-            "   AND S_W_ID = ? FOR UPDATE");
+                    "  FROM " + GeoCConstants.TABLENAME_STOCK +
+                    " WHERE S_I_ID = ? " +
+                    "   AND S_W_ID = ?");
 
     public final SQLStmt stmtUpdateStockSQL = new SQLStmt(
             "UPDATE " + GeoCConstants.TABLENAME_STOCK +
-            "   SET S_QUANTITY = ? , " +
-            "       S_YTD = S_YTD + ?, " +
-            "       S_ORDER_CNT = S_ORDER_CNT + 1, " +
-            "       S_REMOTE_CNT = S_REMOTE_CNT + ? " +
-            " WHERE S_I_ID = ? " +
-            "   AND S_W_ID = ?");
+                    "   SET S_QUANTITY = ? , " +
+                    "       S_YTD = S_YTD + ?, " +
+                    "       S_ORDER_CNT = S_ORDER_CNT + 1, " +
+                    "       S_REMOTE_CNT = S_REMOTE_CNT + ? " +
+                    " WHERE S_I_ID = ? " +
+                    "   AND S_W_ID = ?");
 
     public final SQLStmt stmtInsertOrderLineSQL = new SQLStmt(
             "INSERT INTO " + GeoCConstants.TABLENAME_ORDERLINE +
-            " (OL_O_ID, OL_D_ID, OL_W_ID, OL_NUMBER, OL_I_ID, OL_SUPPLY_W_ID, OL_QUANTITY, OL_AMOUNT, OL_DIST_INFO) " +
-            " VALUES (?,?,?,?,?,?,?,?,?)");
+                    " (OL_O_ID, OL_D_ID, OL_W_ID, OL_NUMBER, OL_I_ID, OL_SUPPLY_W_ID, OL_QUANTITY, OL_AMOUNT, OL_DIST_INFO) "
+                    +
+                    " VALUES (?,?,?,?,?,?,?,?,?)");
 
+    public final SQLStmt stmtClearShoppingCartSQL = new SQLStmt(
+            "DELETE FROM " + GeoCConstants.TABLENAME_SHOPPING_CART_LINE +
+                    " WHERE _SCL_W_ID = ? AND _SCL_D_ID = ? AND _SCL_C_ID = ?");
 
-    public void run(Connection conn, Random gen, int terminalWarehouseID, int numWarehouses, int terminalDistrictLowerID, int terminalDistrictUpperID, GeoCWorker w) throws SQLException {
+    public void run(Connection conn, Random gen, int terminalWarehouseID, int numWarehouses,
+            int terminalDistrictLowerID, int terminalDistrictUpperID, GeoCWorker w) throws SQLException {
 
         int districtID = GeoCUtil.randomNumber(terminalDistrictLowerID, terminalDistrictUpperID, gen);
         int customerID = GeoCUtil.getCustomerID(gen);
 
-        int numItems = GeoCUtil.randomNumber(5, 15, gen);
-        int[] itemIDs = new int[numItems];
-        int[] supplierWarehouseIDs = new int[numItems];
-        int[] orderQuantities = new int[numItems];
-        int allLocal = 1;
+        //FIXME: We need to cause 1% of the new orders to be rolled back.
 
-        for (int i = 0; i < numItems; i++) {
-            itemIDs[i] = GeoCUtil.getItemID(gen);
-            if (GeoCUtil.randomNumber(1, 100, gen) > 1) {
-                supplierWarehouseIDs[i] = terminalWarehouseID;
-            } else {
-                do {
-                    supplierWarehouseIDs[i] = GeoCUtil.randomNumber(1, numWarehouses, gen);
-                }
-                while (supplierWarehouseIDs[i] == terminalWarehouseID && numWarehouses > 1);
-                allLocal = 0;
-            }
-            orderQuantities[i] = GeoCUtil.randomNumber(1, 10, gen);
-        }
+        int _ind_id = 1; //FIXME: add random chance of not being the supervisor
+        Timestamp o_entry_d = Timestamp.valueOf(LocalDateTime.now());
 
-        // we need to cause 1% of the new orders to be rolled back.
-        if (GeoCUtil.randomNumber(1, 100, gen) == 1) {
-            itemIDs[numItems - 1] = GeoCConfig.INVALID_ITEM_ID;
-        }
-
-        newOrderTransaction(terminalWarehouseID, districtID, customerID, numItems, allLocal, itemIDs, supplierWarehouseIDs, orderQuantities, conn);
+        approveCartTransaction(terminalWarehouseID, districtID, customerID, _ind_id, o_entry_d, conn);
 
     }
 
-
-    private void newOrderTransaction(int w_id, int d_id, int c_id,
-                                     int o_ol_cnt, int o_all_local, int[] itemIDs,
-                                     int[] supplierWarehouseIDs, int[] orderQuantities, Connection conn) throws SQLException {
-
+    private void approveCartTransaction(int w_id, int d_id, int c_id,
+            int _ind_id, Timestamp o_entry_d, Connection conn) throws SQLException {
 
         getCustomer(conn, w_id, d_id, c_id);
 
         getWarehouse(conn, w_id);
 
         int d_next_o_id = getDistrict(conn, w_id, d_id);
+
+        int _c_ind_id = getSupervisorFromCustomer(conn, w_id, d_id, c_id);
+
+        if (_ind_id != _c_ind_id){
+            throw new UserAbortException("_IND_ID " + _ind_id + " is not a supervisor!");
+        }
+
+        List<ShoppingCartLine> cartLines = getShoppingCartLines(conn, w_id, d_id, c_id);
+
+        int o_ol_cnt = cartLines.size();
+
+        boolean o_all_local = cartLines.stream().map(c -> c._scl_supply_w_id).allMatch(ol_supply_w_id -> ol_supply_w_id == w_id);
 
         updateDistrict(conn, w_id, d_id);
 
@@ -146,19 +146,17 @@ public class NewOrder extends GeoCProcedure {
         insertNewOrder(conn, w_id, d_id, d_next_o_id);
 
         try (PreparedStatement stmtUpdateStock = this.getPreparedStatement(conn, stmtUpdateStockSQL);
-             PreparedStatement stmtInsertOrderLine = this.getPreparedStatement(conn, stmtInsertOrderLineSQL)) {
+                PreparedStatement stmtInsertOrderLine = this.getPreparedStatement(conn, stmtInsertOrderLineSQL);
+                PreparedStatement stmtClearShoppingCart = this.getPreparedStatement(conn, stmtClearShoppingCartSQL)) {
 
-            for (int ol_number = 1; ol_number <= o_ol_cnt; ol_number++) {
-                int ol_supply_w_id = supplierWarehouseIDs[ol_number - 1];
-                int ol_i_id = itemIDs[ol_number - 1];
-                int ol_quantity = orderQuantities[ol_number - 1];
+            for (ShoppingCartLine cartLine: cartLines) {
+                int ol_supply_w_id = cartLine._scl_supply_w_id;
+                int ol_i_id = cartLine._scl_i_id;
+                int ol_quantity = cartLine._scl_quantity;
+                int ol_number = cartLine._scl_number;
+                float ol_amount = cartLine._scl_amount;
 
-                // this may occasionally error and that's ok!
-                float i_price = getItemPrice(conn, ol_i_id);
-
-                float ol_amount = ol_quantity * i_price;
-
-                Stock s = getStock(conn, ol_supply_w_id, ol_i_id, ol_quantity);
+                Stock s = getStock(conn, ol_supply_w_id, ol_i_id);
 
                 String ol_dist_info = getDistInfo(d_id, s);
 
@@ -196,6 +194,10 @@ public class NewOrder extends GeoCProcedure {
             stmtUpdateStock.executeBatch();
             stmtUpdateStock.clearBatch();
 
+            stmtClearShoppingCart.setInt(1, w_id);
+            stmtClearShoppingCart.setInt(2, d_id);
+            stmtClearShoppingCart.setInt(3, c_id);
+            stmtClearShoppingCart.execute();
         }
 
     }
@@ -216,7 +218,7 @@ public class NewOrder extends GeoCProcedure {
         };
     }
 
-    private Stock getStock(Connection conn, int ol_supply_w_id, int ol_i_id, int ol_quantity) throws SQLException {
+    private Stock getStock(Connection conn, int ol_supply_w_id, int ol_i_id) throws SQLException {
         try (PreparedStatement stmtGetStock = this.getPreparedStatement(conn, stmtGetStockSQL)) {
             stmtGetStock.setInt(1, ol_i_id);
             stmtGetStock.setInt(2, ol_supply_w_id);
@@ -226,6 +228,9 @@ public class NewOrder extends GeoCProcedure {
                 }
                 Stock s = new Stock();
                 s.s_quantity = rs.getInt("S_QUANTITY");
+                s.s_ytd = rs.getFloat("S_YTD");
+                s.s_order_cnt = rs.getInt("S_ORDER_CNT");
+                s.s_remote_cnt = rs.getInt("S_REMOTE_CNT");
                 s.s_dist_01 = rs.getString("S_DIST_01");
                 s.s_dist_02 = rs.getString("S_DIST_02");
                 s.s_dist_03 = rs.getString("S_DIST_03");
@@ -237,27 +242,7 @@ public class NewOrder extends GeoCProcedure {
                 s.s_dist_09 = rs.getString("S_DIST_09");
                 s.s_dist_10 = rs.getString("S_DIST_10");
 
-                if (s.s_quantity - ol_quantity >= 10) {
-                    s.s_quantity -= ol_quantity;
-                } else {
-                    s.s_quantity += -ol_quantity + 91;
-                }
-
                 return s;
-            }
-        }
-    }
-
-    private float getItemPrice(Connection conn, int ol_i_id) throws SQLException {
-        try (PreparedStatement stmtGetItem = this.getPreparedStatement(conn, stmtGetItemSQL)) {
-            stmtGetItem.setInt(1, ol_i_id);
-            try (ResultSet rs = stmtGetItem.executeQuery()) {
-                if (!rs.next()) {
-                    // This is (hopefully) an expected error: this is an expected new order rollback
-                    throw new UserAbortException("EXPECTED new order rollback: I_ID=" + ol_i_id + " not found!");
-                }
-
-                return rs.getFloat("I_PRICE");
             }
         }
     }
@@ -275,7 +260,8 @@ public class NewOrder extends GeoCProcedure {
         }
     }
 
-    private void insertOpenOrder(Connection conn, int w_id, int d_id, int c_id, int o_ol_cnt, int o_all_local, int o_id) throws SQLException {
+    private void insertOpenOrder(Connection conn, int w_id, int d_id, int c_id, int o_ol_cnt, Boolean o_all_local, int o_id)
+            throws SQLException {
         try (PreparedStatement stmtInsertOOrder = this.getPreparedStatement(conn, stmtInsertOOrderSQL);) {
             stmtInsertOOrder.setInt(1, o_id);
             stmtInsertOOrder.setInt(2, d_id);
@@ -283,7 +269,7 @@ public class NewOrder extends GeoCProcedure {
             stmtInsertOOrder.setInt(4, c_id);
             stmtInsertOOrder.setTimestamp(5, new Timestamp(System.currentTimeMillis()));
             stmtInsertOOrder.setInt(6, o_ol_cnt);
-            stmtInsertOOrder.setInt(7, o_all_local);
+            stmtInsertOOrder.setInt(7, o_all_local ? 1:0);
 
             int result = stmtInsertOOrder.executeUpdate();
 
@@ -299,7 +285,8 @@ public class NewOrder extends GeoCProcedure {
             stmtUpdateDist.setInt(2, d_id);
             int result = stmtUpdateDist.executeUpdate();
             if (result == 0) {
-                throw new RuntimeException("Error!! Cannot update next_order_id on district for D_ID=" + d_id + " D_W_ID=" + w_id);
+                throw new RuntimeException(
+                        "Error!! Cannot update next_order_id on district for D_ID=" + d_id + " D_W_ID=" + w_id);
             }
         }
     }
@@ -341,4 +328,55 @@ public class NewOrder extends GeoCProcedure {
         }
     }
 
+    private int getSupervisorFromCustomer(Connection conn, int w_id, int d_id, int c_id) throws SQLException {
+        try (PreparedStatement stmtGetSupervisorFromCustomer = this.getPreparedStatement(conn,
+                stmtGetSupervisorFromCustomerSQL)) {
+            stmtGetSupervisorFromCustomer.setInt(1, w_id);
+            stmtGetSupervisorFromCustomer.setInt(2, d_id);
+            stmtGetSupervisorFromCustomer.setInt(3, c_id);
+            try (ResultSet rs = stmtGetSupervisorFromCustomer.executeQuery()) {
+                if (!rs.next()) {
+                    throw new RuntimeException("W_ID=" + w_id + " D_ID=" + d_id + " C_ID=" + c_id + " not found!");
+                }
+
+                return rs.getInt(1);
+            }
+        }
+    }
+
+    public List<ShoppingCartLine> getShoppingCartLines(Connection conn, int w_id, int d_id, int c_id) throws SQLException {
+        try (PreparedStatement stmtGetCartLines = this.getPreparedStatement(conn,
+                stmtGetCartLinesSQL)) {
+            stmtGetCartLines.setInt(1, w_id);
+            stmtGetCartLines.setInt(2, d_id);
+            stmtGetCartLines.setInt(3, c_id);
+            try (ResultSet rs = stmtGetCartLines.executeQuery()) {
+                if (!rs.next()) {
+                    throw new UserAbortException("Cart is empty for W_ID=" + w_id + " D_ID=" + d_id + " C_ID=" + c_id + " not found!");
+                }
+
+                List<ShoppingCartLine> cartLines = new ArrayList<>();
+                while(rs.next()){
+                    ShoppingCartLine cartLine = new ShoppingCartLine();
+                    cartLine._scl_c_id = rs.getInt("_SCL_C_ID");
+                    cartLine._scl_c_id = rs.getInt("_SCL_D_ID");
+                    cartLine._scl_w_id = rs.getInt("_SCL_W_ID");
+                    cartLine._scl_number = rs.getInt("_SCL_NUMBER");
+                    cartLine._scl_i_id = rs.getInt("_SCL_I_ID");
+                    cartLine._scl_supply_w_id = rs.getInt("_SCL_SUPPLY_W_ID");
+                    cartLine._scl_quantity = rs.getInt("_SCL_QUANTITY");
+                    cartLine._scl_delivery_d = rs.getTimestamp("_SCL_DELIVERY_D");
+                    cartLine._scl_amount = rs.getFloat("_SCL_AMOUNT");
+                    cartLine._scl_dist_info = rs.getString("_SCL_DIST_INFO");
+
+                    cartLines.add(cartLine);
+                }
+                return cartLines;
+            }
+        }
+    }
+
+    public void clearShoppingCart(Connection conn, int w_id, int d_id, int c_id){
+
+    }
 }
