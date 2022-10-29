@@ -98,6 +98,18 @@ public class GeoCLoader extends Loader<GeoCBenchmark> {
                     loadCustomers(conn, w_id, GeoCConfig.configDistPerWhse, GeoCConfig.configCustPerDist);
 
                     if (LOG.isDebugEnabled()) {
+                        LOG.debug("Starting to load _INDIVIDUAL {}", w_id);
+                    }
+                    // _INDIVIDUAL
+                    loadIndividuals(conn, w_id, GeoCConfig.configDistPerWhse, GeoCConfig.configCustPerDist, GeoCConfig.configIndPerCust);
+
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("Starting to update CUSTOMER with supervisors {}", w_id);
+                    }
+                    // _INDIVIDUAL
+                    updateCustomersWithSupervisors(conn, w_id, GeoCConfig.configDistPerWhse, GeoCConfig.configCustPerDist);
+
+                    if (LOG.isDebugEnabled()) {
                         LOG.debug("Starting to load CUSTOMER HISTORY {}", w_id);
                     }
                     // CUSTOMER HISTORY
@@ -414,7 +426,8 @@ public class GeoCLoader extends Loader<GeoCBenchmark> {
                     custPrepStmt.setString(idx++, customer.c_phone);
                     custPrepStmt.setTimestamp(idx++, customer.c_since);
                     custPrepStmt.setString(idx++, customer.c_middle);
-                    custPrepStmt.setString(idx, customer.c_data);
+                    custPrepStmt.setString(idx++, customer.c_data);
+                    custPrepStmt.setNull(idx, java.sql.Types.NULL);
                     custPrepStmt.addBatch();
 
                     k++;
@@ -433,6 +446,71 @@ public class GeoCLoader extends Loader<GeoCBenchmark> {
             LOG.error(se.getMessage());
         }
 
+    }
+
+    protected void loadIndividuals(Connection conn, int w_id, int districtsPerWarehouse, int customersPerDistrict, int individualsPerCustomer) {
+        int k = 0;
+
+        try (PreparedStatement indPrepStmt = getInsertStatement(conn, GeoCConstants.TABLENAME_INDIVIDUAL)) {
+            for (int d = 1; d <= districtsPerWarehouse; d++) {
+                for (int c = 1; c <= customersPerDistrict; c++) {
+                    for (int i = 1; i <= individualsPerCustomer; i++) {
+                        Individual individual = new Individual();
+
+                        individual._ind_id = i;
+                        individual._ind_name = GeoCUtil.randomStr(GeoCUtil.randomNumber(16, 32, benchmark.rng()));
+                        individual._ind_c_id = c;
+                        individual._ind_d_id = d;
+                        individual._ind_w_id = w_id;
+
+                        int idx = 1;
+                        indPrepStmt.setInt(idx++, individual._ind_id);
+                        indPrepStmt.setString(idx++, individual._ind_name);
+                        indPrepStmt.setInt(idx++, individual._ind_c_id);
+                        indPrepStmt.setInt(idx++, individual._ind_d_id);
+                        indPrepStmt.setInt(idx, individual._ind_w_id);
+                        indPrepStmt.addBatch();
+
+                        k++;
+
+                        if (k != 0 && (k % workConf.getBatchSize()) == 0) {
+                            indPrepStmt.executeBatch();
+                            indPrepStmt.clearBatch();
+                        }
+                    }
+                }
+            }
+        } catch (SQLException se) {
+            LOG.error(se.getMessage());
+        }
+    }
+    
+    protected void updateCustomersWithSupervisors(Connection conn, int w_id, int districtsPerWarehouse, int customersPerDistrict) {
+        int k = 0;
+
+        try (PreparedStatement custPrepStmt = conn.prepareStatement(
+                "UPDATE " + GeoCConstants.TABLENAME_CUSTOMER + " SET _C_IND_ID = ?" 
+                    + " WHERE C_W_ID = ? AND C_D_ID = ? AND C_ID = ?")) {
+            for (int d = 1; d <= districtsPerWarehouse; d++) {
+                for (int c = 1; c <= customersPerDistrict; c++) {
+                    int idx = 1;
+                    custPrepStmt.setInt(idx++, 1);
+                    custPrepStmt.setInt(idx++, w_id);
+                    custPrepStmt.setInt(idx++, d);
+                    custPrepStmt.setInt(idx, c);
+                    custPrepStmt.addBatch();
+
+                    k++;
+
+                    if (k != 0 && (k % workConf.getBatchSize()) == 0) {
+                        custPrepStmt.executeBatch();
+                        custPrepStmt.clearBatch();
+                    }
+                }
+            }
+        } catch (SQLException se) {
+            LOG.error(se.getMessage());
+        }
     }
 
     protected void loadCustomerHistory(Connection conn, int w_id, int districtsPerWarehouse, int customersPerDistrict) {
