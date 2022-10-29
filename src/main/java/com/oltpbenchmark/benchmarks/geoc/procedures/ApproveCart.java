@@ -376,7 +376,4 @@ public class ApproveCart extends GeoCProcedure {
         }
     }
 
-    public void clearShoppingCart(Connection conn, int w_id, int d_id, int c_id){
-
-    }
 }

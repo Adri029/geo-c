@@ -113,7 +113,14 @@ public class DecreaseCartLine extends GeoCProcedure {
 
     }
 
-    private void executeRemoveCartLine(Connection conn, int w_id, int d_id, int c_id, int i_id) {
+    private void executeRemoveCartLine(Connection conn, int w_id, int d_id, int c_id, int i_id) throws SQLException {
+        try(PreparedStatement stmtRemoveCartLine = this.getPreparedStatement(conn, this.stmtRemoveCartLineSQL)){
+            stmtRemoveCartLine.setInt(1, w_id);
+            stmtRemoveCartLine.setInt(2, d_id);
+            stmtRemoveCartLine.setInt(3, c_id);
+            stmtRemoveCartLine.setInt(4, i_id);
+            stmtRemoveCartLine.execute();
+        }
 
     }
 
