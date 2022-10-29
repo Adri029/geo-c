@@ -68,7 +68,7 @@ public class DecreaseCartLine extends GeoCProcedure {
                     " WHERE _SCL_W_ID = ? AND _SCL_D_ID = ? AND _SCL_C_ID = ? AND _SCL_I_ID = ?");
 
     public final SQLStmt stmtRemoveCartLineSQL = new SQLStmt(
-            "DELETE " + GeoCConstants.TABLENAME_SHOPPING_CART_LINE +
+            "DELETE FROM " + GeoCConstants.TABLENAME_SHOPPING_CART_LINE +
                     " WHERE _SCL_W_ID = ? AND _SCL_D_ID = ? AND _SCL_C_ID = ? AND _SCL_I_ID = ?");
 
     public void run(Connection conn, Random gen, int terminalWarehouseID, int numWarehouses,
