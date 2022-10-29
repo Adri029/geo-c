@@ -22,7 +22,7 @@ import com.oltpbenchmark.WorkloadConfiguration;
 import com.oltpbenchmark.api.BenchmarkModule;
 import com.oltpbenchmark.api.Loader;
 import com.oltpbenchmark.api.Worker;
-import com.oltpbenchmark.benchmarks.geoc.procedures.NewOrder;
+import com.oltpbenchmark.benchmarks.geoc.procedures.ApproveCart;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,7 +40,7 @@ public class GeoCBenchmark extends BenchmarkModule {
 
     @Override
     protected Package getProcedurePackageImpl() {
-        return (NewOrder.class.getPackage());
+        return (ApproveCart.class.getPackage());
     }
 
     @Override
