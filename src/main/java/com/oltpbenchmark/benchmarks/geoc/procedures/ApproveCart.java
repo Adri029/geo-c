@@ -171,6 +171,11 @@ public class ApproveCart extends GeoCProcedure {
                 stmtInsertOrderLine.setString(9, ol_dist_info);
                 stmtInsertOrderLine.addBatch();
 
+                s.s_quantity -= ol_quantity;
+                if (s.s_quantity < 0) {
+                    throw new UserAbortException("Quantity in cart line exceeds available stock!");
+                }
+
                 int s_remote_cnt_increment;
 
                 if (ol_supply_w_id == w_id) {
