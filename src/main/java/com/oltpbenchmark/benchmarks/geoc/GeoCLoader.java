@@ -83,7 +83,7 @@ public class GeoCLoader extends Loader<GeoCBenchmark> {
                         LOG.debug("Starting to load STOCK {}", w_id);
                     }
                     // STOCK
-                    loadStock(conn, w_id, GeoCConfig.configItemCount);
+                    loadStock(conn, w_id, GeoCConfig.configItemCount, numWarehouses, GeoCConfig.configWhseSpecificItems);
 
                     if (LOG.isDebugEnabled()) {
                         LOG.debug("Starting to load DISTRICT {}", w_id);
@@ -250,13 +250,19 @@ public class GeoCLoader extends Loader<GeoCBenchmark> {
 
     }
 
-    protected void loadStock(Connection conn, int w_id, int numItems) {
+    protected void loadStock(Connection conn, int w_id, int numItems, long numWarehouses, int whseSpecificItems) {
 
         int k = 0;
 
         try (PreparedStatement stockPreparedStatement = getInsertStatement(conn, GeoCConstants.TABLENAME_STOCK)) {
 
             for (int i = 1; i <= numItems; i++) {
+                if (i <= whseSpecificItems && (i % numWarehouses) + 1 != w_id) {
+                    // Items below `whseSpecificItems` are unique to one warehouse,
+                    // so their stock should only be added to that warehouse.
+                    continue;
+                }
+
                 Stock stock = new Stock();
                 stock.s_i_id = i;
                 stock.s_w_id = w_id;
