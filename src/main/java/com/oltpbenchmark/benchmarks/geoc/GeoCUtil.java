@@ -109,7 +109,7 @@ public class GeoCUtil {
     public static int getItemID(Random r) {
         LocalDateTime now = LocalDateTime.now();
         int number_hotspots = GeoCConfig.configItemCount / 5;
-        if (now.isAfter(GeoCUtil.current_cycle.plusNanos(GeoCUtil.cycle_duration))){
+        if (hotspots.isEmpty() || now.isAfter(GeoCUtil.current_cycle.plusNanos(GeoCUtil.cycle_duration))){
             List<Integer> newHotspots = new ArrayList<>();
             while (number_hotspots > 0) {
                 //bound is exclusive -> [0,GeoCConfig.configItemCount[
