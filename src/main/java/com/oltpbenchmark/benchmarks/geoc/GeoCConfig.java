@@ -35,7 +35,11 @@ public final class GeoCConfig {
     // It should be at minimum 1000, because of the customer name generator.
     public final static int configCustPerDist = 1000; // tpc-c std = 3,000; 
     public final static int configIndPerCust = 10; 
+    
     public final static int configWhseSpecificItems = 1000; 
+    public final static int configStockThreshold = 10;
+    public final static int configRestockQuantity = 91;
+
 
     /**
      * An invalid item id used to rollback a new order transaction.
