@@ -40,7 +40,7 @@ public class GeoCWorker extends Worker<GeoCBenchmark> {
      */
     private final int terminalDistrictLowerID;
     private final int terminalDistrictUpperID;
-    private final Random gen = new Random();
+    private final Random gen = new Random(0);
 
     private final int numWarehouses;
 

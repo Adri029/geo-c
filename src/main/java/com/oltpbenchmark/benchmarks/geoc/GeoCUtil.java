@@ -23,6 +23,9 @@ import com.oltpbenchmark.util.RandomGenerator;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 import static com.oltpbenchmark.benchmarks.geoc.GeoCConfig.*;
@@ -99,8 +102,36 @@ public class GeoCUtil {
     private static final int C_LAST_LOAD_C = 157; // in range [0, 255]
     private static final int C_LAST_RUN_C = 223; // in range [0, 255]
 
+    private static LocalDateTime current_cycle = LocalDateTime.now();
+    private static int cycle_duration = 300000; //300ms
+    private static List<Integer> hotspots = new ArrayList<>();
+
     public static int getItemID(Random r) {
-        return nonUniformRandom(8191, OL_I_ID_C, 1, configItemCount, r);
+        LocalDateTime now = LocalDateTime.now();
+        int number_hotspots = GeoCConfig.configItemCount / 5;
+        if (now.isAfter(GeoCUtil.current_cycle.plusNanos(GeoCUtil.cycle_duration))){
+            List<Integer> newHotspots = new ArrayList<>();
+            while (number_hotspots > 0) {
+                //bound is exclusive -> [0,GeoCConfig.configItemCount[
+                newHotspots.add(r.nextInt(GeoCConfig.configItemCount));
+                number_hotspots--;
+            }
+
+            GeoCUtil.hotspots = newHotspots;
+            GeoCUtil.current_cycle = now;
+        }
+
+        int prob = r.nextInt(1,101);
+        int id;
+
+        // chosing 80% of the time 20% of products
+        if(prob <= 80){
+            id = GeoCUtil.hotspots.get(r.nextInt(GeoCUtil.hotspots.size()));
+        } else {
+            id = nonUniformRandom(8191, OL_I_ID_C, 1, configItemCount, r);
+        }
+
+        return id;
     }
 
     public static int getCustomerID(Random r) {
