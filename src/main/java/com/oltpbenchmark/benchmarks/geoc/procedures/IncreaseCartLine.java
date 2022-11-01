@@ -93,7 +93,9 @@ public class IncreaseCartLine extends GeoCProcedure {
         int orderQuantity = GeoCUtil.randomNumber(1, 10, gen);
         int allLocal = 1;
 
-        if (GeoCUtil.randomNumber(1, 100, gen) > 1) {
+        if (itemID <= GeoCConfig.configWhseSpecificItems) {
+            supplierWarehouseID = (itemID % numWarehouses) + 1;
+        } else if (GeoCUtil.randomNumber(1, 100, gen) > 1) {
             supplierWarehouseID = terminalWarehouseID;
         } else {
             do {
