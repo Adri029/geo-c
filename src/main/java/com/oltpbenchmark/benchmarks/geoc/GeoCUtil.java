@@ -115,13 +115,13 @@ public class GeoCUtil {
         if (hotspots.isEmpty() || now.isAfter(GeoCUtil.current_cycle.plusNanos(GeoCUtil.cycle_duration))){
             List<Integer> newHotspots = new ArrayList<>();
             while (number_hotspots > number_wui) {
-                //bound is exclusive -> [1,GeoCConfig.configItemCount]
-                newHotspots.add(r.nextInt(1, GeoCConfig.configItemCount + 1));
+                //bound is exclusive -> ]GeoCConfig.configWhseSpecificItems,GeoCConfig.configItemCount]
+                newHotspots.add(r.nextInt(GeoCConfig.configWhseSpecificItems + 1, GeoCConfig.configItemCount + 1));
                 number_hotspots--;
             }
             while (number_wui > 0) {
-                //bound is exclusive -> [1,1000]
-                newHotspots.add(r.nextInt(1, 1000 + 1));
+                //bound is exclusive -> [1,GeoCConfig.configWhseSpecificItems]
+                newHotspots.add(r.nextInt(1, GeoCConfig.configWhseSpecificItems + 1));
                 number_wui--;
             }
 
