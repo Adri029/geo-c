@@ -109,12 +109,20 @@ public class GeoCUtil {
     public static int getItemID(Random r) {
         LocalDateTime now = LocalDateTime.now();
         int number_hotspots = GeoCConfig.configItemCount / 5;
+
+        //warehouse unique items
+        int number_wui = number_hotspots / 10;
         if (hotspots.isEmpty() || now.isAfter(GeoCUtil.current_cycle.plusNanos(GeoCUtil.cycle_duration))){
             List<Integer> newHotspots = new ArrayList<>();
-            while (number_hotspots > 0) {
-                //bound is exclusive -> [0,GeoCConfig.configItemCount[
-                newHotspots.add(r.nextInt(GeoCConfig.configItemCount));
+            while (number_hotspots > number_wui) {
+                //bound is exclusive -> [1,GeoCConfig.configItemCount]
+                newHotspots.add(r.nextInt(1, GeoCConfig.configItemCount + 1));
                 number_hotspots--;
+            }
+            while (number_wui > 0) {
+                //bound is exclusive -> [1,1000]
+                newHotspots.add(r.nextInt(1, 1000 + 1));
+                number_wui--;
             }
 
             GeoCUtil.hotspots = newHotspots;
