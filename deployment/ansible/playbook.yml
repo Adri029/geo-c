@@ -2,7 +2,7 @@
 - name: Setup OS
   hosts: "*"
   become: true
-  roles: 
+  roles:
     - common
 
 - name: Install PostgreSQL
@@ -10,3 +10,9 @@
   become: true
   roles:
     - postgres
+
+- name: Install CockroachDB
+  hosts: "*"
+  become: true
+  roles:
+    - cockroach

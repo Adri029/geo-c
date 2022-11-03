@@ -1,0 +1,19 @@
+{% set advertise_addr = ansible_facts['eth0']['ipv4']['address'] %}
+{% set join_addresses = groups['cockroach'] | default([ansible_facts['eth0']['ipv4']['address']]) %}
+
+[Unit]
+Description=Cockroach Database cluster node
+Requires=network.target
+[Service]
+Type=notify
+WorkingDirectory=/var/lib/cockroach
+ExecStart=/usr/local/bin/cockroach start --insecure --advertise-addr={{advertise_addr}} --join={{ ",".join(join_addresses) }} --cache=.25 --max-sql-memory=.25
+TimeoutStopSec=60
+Restart=always
+RestartSec=10
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=cockroach
+User=cockroach
+[Install]
+WantedBy=default.target
