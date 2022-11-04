@@ -43,3 +43,8 @@
 - name: Install CockroachDB, if it isn't already installed
   ansible.builtin.include_tasks: install_cockroach.yml
   when: not cockroach_bin.stat.exists
+
+- name: Start CockroachDB
+  ansible.builtin.service:
+    name: insecurecockroachdb
+    state: started

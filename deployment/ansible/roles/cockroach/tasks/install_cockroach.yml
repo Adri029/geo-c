@@ -15,8 +15,3 @@
   ansible.builtin.template:
     src: insecurecockroachdb.service.j2
     dest: /etc/systemd/system/insecurecockroachdb.service
-
-- name: Start CockroachDB
-  ansible.builtin.service:
-    name: insecurecockroachdb
-    state: started
