@@ -12,7 +12,7 @@
     - postgres
 
 - name: Install CockroachDB
-  hosts: "cockroach*"
+  hosts: "cockroachdb*"
   become: true
   roles:
     - cockroach

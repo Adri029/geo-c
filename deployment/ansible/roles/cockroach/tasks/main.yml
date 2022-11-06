@@ -48,3 +48,10 @@
   ansible.builtin.service:
     name: insecurecockroachdb
     state: started
+
+- name: Initialize cluster and database (only on the first node)
+  ansible.builtin.shell: |
+    cockroach init --insecure --host=localhost:26257
+    cockroach sql --execute="CREATE DATABASE benchbase;" --insecure --host=localhost:26257
+  when: ansible_hostname == "cockroachdb1"
+  ignore_errors: true

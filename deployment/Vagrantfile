@@ -2,13 +2,13 @@
 # vi: set ft=ruby :
 
 # Select here the desired deployment preset.
-PRESET = :postgres
+PRESET = :cockroachdb_single
 
 settings = case PRESET
-  when :cockroach_single then { number: 1, type: :cockroach }
-  when :cockroach_triple then { number: 3, type: :cockroach }
+  when :cockroachdb_single then { number: 1, type: :cockroachdb }
+  when :cockroachdb_triple then { number: 3, type: :cockroachdb }
   when :postgres then { number: 1, type: :postgres }
-  else raise 'Invalid preset!'
+  else raise 'Invalid preset! Pick another one.'
 end
 
 Vagrant.configure('2') do |config|
@@ -24,8 +24,11 @@ Vagrant.configure('2') do |config|
   # using a specific IP.
   # config.vm.network "private_network", ip: "192.168.33.10"
 
-  if settings[:type] === :postgres then
-    config.vm.network 'forwarded_port', guest: 5432, host: 5432 
+  case settings[:type] 
+    when :postgres then
+      config.vm.network 'forwarded_port', guest: 5432, host: 5432 
+    when :cockroachdb then
+      config.vm.network 'forwarded_port', guest: 26257, host: 26257 
   end
 
   config.vm.provider 'virtualbox' do |vb|
