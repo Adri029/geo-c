@@ -56,3 +56,8 @@
 
 - name: Reboot the machine
   ansible.builtin.reboot:
+
+- name: Make sure PostgreSQL is running
+  ansible.builtin.service:
+    name: postgresql
+    state: started

@@ -6,13 +6,13 @@
     - common
 
 - name: Install PostgreSQL
-  hosts: "postgres*"
+  hosts: postgres
   become: true
   roles:
     - postgres
 
 - name: Install CockroachDB
-  hosts: "cockroachdb*"
+  hosts: cockroachdb
   become: true
   roles:
     - cockroach

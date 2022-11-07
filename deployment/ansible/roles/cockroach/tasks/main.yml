@@ -44,7 +44,7 @@
   ansible.builtin.include_tasks: install_cockroach.yml
   when: not cockroach_bin.stat.exists
 
-- name: Start CockroachDB
+- name: Start CockroachDB service
   ansible.builtin.service:
     name: insecurecockroachdb
     state: started
@@ -55,3 +55,11 @@
     cockroach sql --execute="CREATE DATABASE benchbase;" --insecure --host=localhost:26257
   when: ansible_hostname == "cockroachdb1"
   ignore_errors: true
+
+- name: Reboot the machine
+  ansible.builtin.reboot:
+
+- name: Make sure CockroachDB is running
+  ansible.builtin.service:
+    name: insecurecockroachdb
+    state: started
