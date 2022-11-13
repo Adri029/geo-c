@@ -16,3 +16,9 @@
   become: true
   roles:
     - cockroach
+
+- name: Deploy proxy for CockroachDB
+  hosts: haproxy
+  become: true
+  roles:
+    - cockroach_proxy

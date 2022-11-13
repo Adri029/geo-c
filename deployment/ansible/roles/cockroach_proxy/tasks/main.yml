@@ -1,0 +1,33 @@
+- name: Install HAProxy
+  ansible.builtin.apt: 
+    name: haproxy
+
+- name: Check if CockroachDB is already installed
+  ansible.builtin.stat:
+    path: /usr/local/bin/cockroach
+  register: cockroach_bin
+
+- name: Install CockroachDB, if it isn't already installed
+  ansible.builtin.shell: |
+    curl https://binaries.cockroachdb.com/cockroach-v22.1.10.linux-amd64.tgz | tar -xz
+    cp -i cockroach-v22.1.10.linux-amd64/cockroach /usr/local/bin/
+  when: not cockroach_bin.stat.exists
+
+- name: Generate configuration file for HAProxy
+  ansible.builtin.shell: |
+    cockroach gen haproxy --insecure --host={{ db_address }} --port={{ db_port }}
+  vars:
+    db_first_node: "{{ hostvars[groups['cockroachdb'][0]] }}"
+    db_address: "{{ db_first_node['db_address'] }}"
+    db_port: "{{ db_first_node['db_port'] }}"
+
+- name: Replace configuration file with new one
+  ansible.builtin.copy:
+    src: haproxy.cfg
+    dest: /etc/haproxy/haproxy.cfg 
+    remote_src: yes
+
+- name: Restart HAProxy service
+  ansible.builtin.service:
+    name: haproxy
+    state: restarted
