@@ -19,14 +19,14 @@
         <work>
             <time>60</time>
             <rate>10000</rate>
-            <weights>45,43,4,4,4</weights>
+            <weights>8.1,7.74,0.72,0.72,0.72,41.74,30.26,9,1</weights>
         </work>
     </works>
 
     <!-- GeoC specific -->
     <transactiontypes>
         <transactiontype>
-            <name>NewOrder</name>
+            <name>ApproveCart</name>
             <!--<preExecutionWait>18000</preExecutionWait>-->
             <!--<postExecutionWait>12000</postExecutionWait>-->
         </transactiontype>
@@ -50,5 +50,24 @@
             <!--<preExecutionWait>2000</preExecutionWait>-->
             <!--<postExecutionWait>5000</postExecutionWait>-->
         </transactiontype>
+        <transactiontype>
+            <name>IncreaseCartLine</name>
+            <!--<preExecutionWait>2000</preExecutionWait>-->
+            <!--<postExecutionWait>5000</postExecutionWait>-->
+        </transactiontype>
+        <transactiontype>
+            <name>DecreaseCartLine</name>
+            <!--<preExecutionWait>2000</preExecutionWait>-->
+            <!--<postExecutionWait>5000</postExecutionWait>-->
+        </transactiontype>
+        <transactiontype>
+            <name>CheckCart</name>
+            <!-- This probability needs to be looked at -->
+        </transactiontype>
+        <transactiontype>
+            <name>Restock</name>
+            <!-- This probability needs to be looked at, after testing we can have more information -->
+        </transactiontype>
+
     </transactiontypes>
 </parameters>
