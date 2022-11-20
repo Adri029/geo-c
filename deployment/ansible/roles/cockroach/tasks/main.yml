@@ -1,0 +1,65 @@
+---
+# Based on: https://www.cockroachlabs.com/docs/v22.1/deploy-cockroachdb-on-premises-insecure
+
+- name: Make sure `timesyncd` is off
+  ansible.builtin.shell: timedatectl set-ntp no
+  ignore_errors: true
+
+- name: Install NTP
+  ansible.builtin.apt:
+    name: ntp
+
+- name: Stop the NTP daemon
+  ansible.builtin.service:
+    name: ntp
+    state: stopped
+
+- name: Comment out lines started with `server` or `pool`
+  ansible.builtin.replace:
+    path: /etc/ntp.conf
+    regexp: "^(server|pool)"
+    replace: '# \1'
+
+- name: Sync the machine's clock with Google's NTP service
+  ansible.builtin.blockinfile:
+    path: /etc/ntp.conf
+    marker: "# ANSIBLE MANAGED BLOCK"
+    block: |
+      server time1.google.com iburst
+      server time2.google.com iburst
+      server time3.google.com iburst
+      server time4.google.com iburst
+
+- name: Restart the NTP daemon
+  ansible.builtin.service:
+    name: ntp
+    state: restarted
+
+- name: Check if CockroachDB is already installed
+  ansible.builtin.stat:
+    path: /usr/local/bin/cockroach
+  register: cockroach_bin
+
+- name: Install CockroachDB, if it isn't already installed
+  ansible.builtin.include_tasks: install_cockroach.yml
+  when: not cockroach_bin.stat.exists
+
+- name: Start CockroachDB service
+  ansible.builtin.service:
+    name: insecurecockroachdb
+    state: started
+
+- name: Initialize cluster and database (only on the first node)
+  ansible.builtin.shell: |
+    cockroach init --insecure --host=localhost:26257
+    cockroach sql --execute="CREATE DATABASE benchbase;" --insecure --host=localhost:26257
+  when: ansible_hostname == "cockroachdb1"
+  ignore_errors: true
+
+- name: Reboot the machine
+  ansible.builtin.reboot:
+
+- name: Make sure CockroachDB is running
+  ansible.builtin.service:
+    name: insecurecockroachdb
+    state: started

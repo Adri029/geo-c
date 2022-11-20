@@ -1,0 +1,63 @@
+---
+- name: Create the file repository configuration
+  ansible.builtin.shell: sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+
+- name: Import the repository signing key
+  ansible.builtin.apt_key:
+    url: https://www.postgresql.org/media/keys/ACCC4CF8.asc
+    state: present
+
+- name: Update the package lists
+  ansible.builtin.apt:
+    update_cache: true
+
+- name: Install PostgreSQL 15 and its Python connector
+  ansible.builtin.apt:
+    pkg:
+      - postgresql-15
+      - python3-psycopg2
+
+- name: Disable authentication for the `postgres` user on the machine itself
+  ansible.builtin.replace:
+    path: /etc/postgresql/15/main/pg_hba.conf
+    regexp: '^(local\s+all\s+postgres\s+)peer$'
+    replace: '\1trust'
+
+- name: Listen to outside connections
+  ansible.builtin.replace:
+    path: /etc/postgresql/15/main/postgresql.conf
+    regexp: "^#listen_addresses = 'localhost'"
+    replace: "listen_addresses = '*'"
+
+- name: Check if outside connections are already allowed
+  lineinfile:
+    state: absent
+    path: /etc/postgresql/15/main/pg_hba.conf
+    regexp: "^host all all 0.0.0.0/0 trust$"
+  check_mode: true
+  changed_when: false # This just makes things look prettier in the logs.
+  register: check
+
+- name: Allow outside connections if not yet allowed
+  lineinfile:
+    state: present
+    path: /etc/postgresql/15/main/pg_hba.conf
+    line: "host all all 0.0.0.0/0 trust"
+  when: check.found == 0
+
+- name: Restart PostgreSQL to apply changes
+  ansible.builtin.service:
+    name: postgresql
+    state: restarted
+
+- name: Create database for benchmarking
+  community.postgresql.postgresql_db:
+    name: benchbase
+
+- name: Reboot the machine
+  ansible.builtin.reboot:
+
+- name: Make sure PostgreSQL is running
+  ansible.builtin.service:
+    name: postgresql
+    state: started

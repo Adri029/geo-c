@@ -1,0 +1,64 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# -- Variables to be modified.
+
+# Select here the desired deployment preset.
+# Available: :cockroachdb_single, :cockroachdb_triple, :postgres
+PRESET = :cockroachdb_triple
+
+# -- There shouldn't be any need to change the code below.
+
+settings = case PRESET
+  when :cockroachdb_single then { default_port: 26257, number: 1, type: :cockroachdb }
+  when :cockroachdb_triple then { default_port: 26257, number: 3, type: :cockroachdb }
+  when :postgres then { default_port: 5432 , number: 1, type: :postgres }
+  else raise 'Invalid preset! Pick another one.'
+end
+
+hostnames = (1..settings[:number]).map { |i| "#{settings[:type]}#{i}" }
+
+host_vars = {}
+hostnames.each_with_index do |hostname, index|
+  address = "192.168.56.#{index + 2}"
+  port = settings[:default_port] # + index
+  host_vars[hostname] = { db_address: address, db_port: port }
+end
+
+Vagrant.configure('2') do |config|
+  # For a complete reference, please see the online documentation at
+  # https://docs.vagrantup.com.
+
+  config.vm.box = 'bento/ubuntu-22.04'
+
+  # Uncomment if the machine takes too long to boot.
+  # config.vm.boot_timeout = 3000
+
+  config.vm.provider 'virtualbox' do |vb|
+    vb.memory = '512'
+    vb.cpus = 1
+  end
+
+  config.vm.provision 'ansible' do |ansible|
+    ansible.verbose = 'v'
+    ansible.playbook = 'ansible/playbook.yml'
+    ansible.groups = { settings[:type] => hostnames }
+    ansible.host_vars = host_vars
+
+    if PRESET === :cockroachdb_triple then
+      ansible.inventory_path = 'ansible/vagrant_cockroachdb_triple.ini'
+    end
+  end
+
+  hostnames.reverse().each do |hostname|
+    config.vm.define hostname do |node|
+      node.vm.hostname = hostname
+
+      address = host_vars[hostname][:db_address]
+      node.vm.network "private_network", ip: address
+      
+      # port = host_vars[hostname][:db_port]
+      # node.vm.network 'forwarded_port', guest: port, host: port 
+    end
+  end
+end

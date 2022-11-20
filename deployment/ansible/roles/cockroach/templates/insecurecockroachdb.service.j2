@@ -1,0 +1,23 @@
+{% set advertise_addr = hostvars[ansible_hostname]['db_address'] + ":" + "{0:d}".format(hostvars[ansible_hostname]['db_port']) %}
+
+{% set addresses = [] %}
+{% for host in groups['cockroachdb'] %}
+    {{ addresses.append(hostvars[host]['db_address'] + ":" + "{0:d}".format(hostvars[host]['db_port'])) }}
+{% endfor %}
+
+[Unit]
+Description=Cockroach Database cluster node
+Requires=network.target
+[Service]
+Type=notify
+WorkingDirectory=/var/lib/cockroach
+ExecStart=/usr/local/bin/cockroach start --insecure --advertise-addr={{ advertise_addr }} --join={{ addresses | join(',') }}
+TimeoutStopSec=60
+Restart=always
+RestartSec=10
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=cockroach
+User=cockroach
+[Install]
+WantedBy=default.target
