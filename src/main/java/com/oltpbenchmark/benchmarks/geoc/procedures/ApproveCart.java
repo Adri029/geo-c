@@ -137,6 +137,10 @@ public class ApproveCart extends GeoCProcedure {
 
         int o_ol_cnt = cartLines.size();
 
+        if (o_ol_cnt == 0){
+            throw new UserAbortException("Shopping cart W_ID " + w_id + " D_ID " + d_id + " C_ID " + c_id + " is empty!");
+        }
+
         boolean o_all_local = cartLines.stream().map(c -> c._scl_supply_w_id).allMatch(ol_supply_w_id -> ol_supply_w_id == w_id);
 
         updateDistrict(conn, w_id, d_id);
