@@ -103,15 +103,32 @@ public class ApproveCart extends GeoCProcedure {
             "DELETE FROM " + GeoCConstants.TABLENAME_SHOPPING_CART_LINE +
                     " WHERE _SCL_W_ID = ? AND _SCL_D_ID = ? AND _SCL_C_ID = ?");
 
+    public final SQLStmt stmtChooseCartSQL = new SQLStmt(
+            "SELECT _SCL_C_ID, _SCL_D_ID FROM " +  GeoCConstants.TABLENAME_SHOPPING_CART_LINE +
+            " WHERE _SCL_W_ID = ? AND _SCL_D_ID >= ? AND _SCL_D_ID <= ? LIMIT 1");
+
     public void run(Connection conn, Random gen, int terminalWarehouseID, int numWarehouses,
             int terminalDistrictLowerID, int terminalDistrictUpperID, GeoCWorker w) throws SQLException {
 
-        int districtID = GeoCUtil.randomNumber(terminalDistrictLowerID, terminalDistrictUpperID, gen);
-        int customerID = GeoCUtil.getCustomerID(gen);
+        int districtID;
+        int customerID;
+
+        try (PreparedStatement stmtChooseCart = this.getPreparedStatement(conn, stmtChooseCartSQL);) {
+            stmtChooseCart.setInt(1, terminalWarehouseID);
+            stmtChooseCart.setInt(2, terminalDistrictLowerID);
+            stmtChooseCart.setInt(3, terminalDistrictUpperID);
+            try (ResultSet rs = stmtChooseCart.executeQuery()){
+                if (!rs.next()) {
+                    throw new UserAbortException("No shopping carts found in warehouse W_ID=" + terminalWarehouseID + "!");
+                }
+                customerID = rs.getInt("_SCL_C_ID");
+                districtID = rs.getInt("_SCL_D_ID");
+            }
+        }
 
         //FIXME: We need to cause 1% of the new orders to be rolled back.
 
-        int _ind_id = 1; //FIXME: add random chance of not being the supervisor
+        int _ind_id = 1;
         Timestamp o_entry_d = Timestamp.valueOf(LocalDateTime.now());
 
         approveCartTransaction(terminalWarehouseID, districtID, customerID, _ind_id, o_entry_d, conn);
@@ -137,10 +154,6 @@ public class ApproveCart extends GeoCProcedure {
 
         int o_ol_cnt = cartLines.size();
 
-        if (o_ol_cnt == 0){
-            throw new UserAbortException("Shopping cart W_ID " + w_id + " D_ID " + d_id + " C_ID " + c_id + " is empty!");
-        }
-
         boolean o_all_local = cartLines.stream().map(c -> c._scl_supply_w_id).allMatch(ol_supply_w_id -> ol_supply_w_id == w_id);
 
         updateDistrict(conn, w_id, d_id);
@@ -153,11 +166,12 @@ public class ApproveCart extends GeoCProcedure {
                 PreparedStatement stmtInsertOrderLine = this.getPreparedStatement(conn, stmtInsertOrderLineSQL);
                 PreparedStatement stmtClearShoppingCart = this.getPreparedStatement(conn, stmtClearShoppingCartSQL)) {
 
+            int ol_number = 0;
             for (ShoppingCartLine cartLine: cartLines) {
                 int ol_supply_w_id = cartLine._scl_supply_w_id;
                 int ol_i_id = cartLine._scl_i_id;
                 int ol_quantity = cartLine._scl_quantity;
-                int ol_number = cartLine._scl_number;
+                ol_number += 1;
                 float ol_amount = cartLine._scl_amount;
 
                 Stock s = getStock(conn, ol_supply_w_id, ol_i_id);
@@ -365,12 +379,11 @@ public class ApproveCart extends GeoCProcedure {
                 }
 
                 List<ShoppingCartLine> cartLines = new ArrayList<>();
-                while(rs.next()){
+                do{
                     ShoppingCartLine cartLine = new ShoppingCartLine();
                     cartLine._scl_c_id = rs.getInt("_SCL_C_ID");
                     cartLine._scl_c_id = rs.getInt("_SCL_D_ID");
                     cartLine._scl_w_id = rs.getInt("_SCL_W_ID");
-                    cartLine._scl_number = rs.getInt("_SCL_NUMBER");
                     cartLine._scl_i_id = rs.getInt("_SCL_I_ID");
                     cartLine._scl_supply_w_id = rs.getInt("_SCL_SUPPLY_W_ID");
                     cartLine._scl_quantity = rs.getInt("_SCL_QUANTITY");
@@ -379,10 +392,11 @@ public class ApproveCart extends GeoCProcedure {
                     cartLine._scl_dist_info = rs.getString("_SCL_DIST_INFO");
 
                     cartLines.add(cartLine);
-                }
+                } while(rs.next());
                 return cartLines;
             }
         }
     }
+
 
 }
