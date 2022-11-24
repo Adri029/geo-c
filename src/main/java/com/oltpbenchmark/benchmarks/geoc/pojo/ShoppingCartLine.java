@@ -23,7 +23,6 @@ public class ShoppingCartLine {
     public int _scl_c_id;
     public int _scl_d_id;
     public int _scl_w_id;
-    public int _scl_number;
     public int _scl_i_id;
     public int _scl_supply_w_id;
     public Timestamp _scl_delivery_d;
