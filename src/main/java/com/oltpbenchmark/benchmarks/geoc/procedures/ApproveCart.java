@@ -105,7 +105,9 @@ public class ApproveCart extends GeoCProcedure {
 
     public final SQLStmt stmtChooseCartSQL = new SQLStmt(
             "SELECT _SCL_C_ID, _SCL_D_ID FROM " +  GeoCConstants.TABLENAME_SHOPPING_CART_LINE +
-            " WHERE _SCL_W_ID = ? AND _SCL_D_ID >= ? AND _SCL_D_ID <= ? LIMIT 1");
+                " WHERE _SCL_W_ID = ? AND _SCL_D_ID >= ? AND _SCL_D_ID <= ?" + 
+                " ORDER BY RANDOM()" +
+                " LIMIT 1");
 
     public void run(Connection conn, Random gen, int terminalWarehouseID, int numWarehouses,
             int terminalDistrictLowerID, int terminalDistrictUpperID, GeoCWorker w) throws SQLException {
