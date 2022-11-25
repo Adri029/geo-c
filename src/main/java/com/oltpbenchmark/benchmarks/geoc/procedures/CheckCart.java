@@ -39,7 +39,7 @@ public class CheckCart extends GeoCProcedure {
     private static final Logger LOG = LoggerFactory.getLogger(CheckCart.class);
 
     public SQLStmt cartGetShoppingCartLinesSQL = new SQLStmt(
-            "SELECT _scl_c_id, _scl_d_id, _scl_w_id, _scl_number, _scl_i_id, _scl_supply_w_id," +
+            "SELECT _scl_c_id, _scl_d_id, _scl_w_id, _scl_i_id, _scl_supply_w_id," +
                     "_scl_delivery_d, _scl_quantity, _scl_amount, _scl_dist_info" +
                     " FROM " + GeoCConstants.TABLENAME_SHOPPING_CART_LINE +
                     " WHERE _SCL_W_ID = ? AND _SCL_D_ID = ? AND _SCL_C_ID = ?");
@@ -84,7 +84,6 @@ public class CheckCart extends GeoCProcedure {
                     line._scl_c_id = rs.getInt("_scl_c_id");
                     line._scl_d_id = rs.getInt("_scl_d_id");
                     line._scl_w_id = rs.getInt("_scl_w_id");
-                    line._scl_number = rs.getInt("_scl_number");
                     line._scl_i_id = rs.getInt("_scl_i_id");
                     line._scl_supply_w_id = rs.getInt("_scl_supply_w_id");
                     line._scl_delivery_d = rs.getTimestamp("_scl_delivery_d");

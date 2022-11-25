@@ -65,17 +65,14 @@ public class IncreaseCartLine extends GeoCProcedure {
 
     public final SQLStmt stmtCreateCartLineSQL = new SQLStmt(
             "INSERT INTO " + GeoCConstants.TABLENAME_SHOPPING_CART_LINE +
-                    " (_SCL_C_ID, _SCL_D_ID, _SCL_W_ID, _SCL_I_ID, _SCL_SUPPLY_W_ID, _SCL_DELIVERY_D, _SCL_QUANTITY, _SCL_AMOUNT, _SCL_DIST_INFO, _SCL_NUMBER) "
+                    " (_SCL_C_ID, _SCL_D_ID, _SCL_W_ID, _SCL_I_ID, _SCL_SUPPLY_W_ID, _SCL_DELIVERY_D, _SCL_QUANTITY, _SCL_AMOUNT, _SCL_DIST_INFO) "
                     +
-                    " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                    " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
     public final SQLStmt stmtUpdateCartLineSQL = new SQLStmt(
             "UPDATE " + GeoCConstants.TABLENAME_SHOPPING_CART_LINE +
                     " SET _SCL_QUANTITY = ?, _SCL_AMOUNT = ? WHERE _SCL_W_ID = ? AND _SCL_D_ID = ? AND _SCL_C_ID = ? AND _SCL_I_ID = ?");
 
-    public final SQLStmt stmtGetLastCartLineSQL = new SQLStmt(
-            "SELECT max(_SCL_NUMBER) AS LAST_LINE FROM " + GeoCConstants.TABLENAME_SHOPPING_CART_LINE +
-                    " WHERE _SCL_W_ID = ? AND _SCL_D_ID = ? AND _SCL_C_ID = ?");
 
     public final SQLStmt stmtCheckItemInCartSQL = new SQLStmt(
             "SELECT _SCL_QUANTITY FROM " + GeoCConstants.TABLENAME_SHOPPING_CART_LINE +
@@ -153,8 +150,6 @@ public class IncreaseCartLine extends GeoCProcedure {
 
             String ol_dist_info = getDistInfo(d_id, s);
 
-            int next_id = getNextItemID(conn, w_id, d_id, c_id);
-
             stmtCreateCartLine.setInt(1, c_id);
             stmtCreateCartLine.setInt(2, d_id);
             stmtCreateCartLine.setInt(3, w_id);
@@ -164,7 +159,6 @@ public class IncreaseCartLine extends GeoCProcedure {
             stmtCreateCartLine.setInt(7, _scl_quantity);
             stmtCreateCartLine.setDouble(8, _scl_amount);
             stmtCreateCartLine.setString(9, ol_dist_info);
-            stmtCreateCartLine.setInt(10, next_id);
 
             stmtCreateCartLine.execute();
         }
@@ -196,21 +190,6 @@ public class IncreaseCartLine extends GeoCProcedure {
                     return 0;
                 } else {
                     return rs.getInt("_SCL_QUANTITY");
-                }
-            }
-        }
-    }
-
-    private int getNextItemID(Connection conn, int w_id, int d_id, int c_id) throws SQLException {
-        try (PreparedStatement stmtGetLastCartLine = this.getPreparedStatement(conn, this.stmtGetLastCartLineSQL)) {
-            stmtGetLastCartLine.setInt(1, w_id);
-            stmtGetLastCartLine.setInt(2, d_id);
-            stmtGetLastCartLine.setInt(3, c_id);
-            try (ResultSet rs = stmtGetLastCartLine.executeQuery()) {
-                if (!rs.next()) {
-                    return 1;
-                } else {
-                    return rs.getInt("LAST_LINE") + 1;
                 }
             }
         }
