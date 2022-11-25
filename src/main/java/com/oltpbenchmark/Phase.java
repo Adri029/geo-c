@@ -182,17 +182,17 @@ public class Phase {
             }
             return ret;
         } else {
-            int randomPercentage = gen.nextInt((int) totalWeight()) + 1;
+            double randomPercentage = gen.nextDouble(totalWeight());
             double weight = 0.0;
-            for (int i = 0; i < this.weightCount; i++) {
+            int i;
+            for (i = 0; i < this.weightCount; i++) {
                 weight += weights.get(i);
                 if (randomPercentage <= weight) {
                     return i + 1;
                 }
             }
+            return i;
         }
-
-        return -1;
     }
 
     /**
