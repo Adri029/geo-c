@@ -19,7 +19,8 @@
         <work>
             <time>60</time>
             <rate>10000</rate>
-            <weights>8.1,7.74,0.72,0.72,0.72,41.74,30.26,9,1</weights>
+            <!-- <rate>unlimited</rate> -->
+            <weights>8.1,7.74,0.72,0.72,0.72,41.74,30.26,9.6,0.4</weights>
         </work>
     </works>
 
