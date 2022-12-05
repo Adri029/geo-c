@@ -1,3 +1,7 @@
+- name: Install curl
+  ansible.builtin.apt:
+    name: curl
+
 - name: Install CockroachDB, if it isn't already installed
   ansible.builtin.shell: |
     curl https://binaries.cockroachdb.com/cockroach-v22.1.10.linux-amd64.tgz | tar -xz
