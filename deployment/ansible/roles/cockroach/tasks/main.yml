@@ -53,7 +53,7 @@
   ansible.builtin.shell: |
     cockroach init --insecure --host=localhost:26257
     cockroach sql --execute="CREATE DATABASE benchbase;" --insecure --host=localhost:26257
-  when: ansible_hostname == "cockroachdb1"
+  when: inventory_hostname == "cockroachdb1"
   ignore_errors: true
 
 - name: Reboot the machine
