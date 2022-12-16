@@ -40,6 +40,20 @@
     path: /usr/local/bin/cockroach
   register: cockroach_bin
 
+- name: Make sure CockroachDB is not running, if it is already installed
+  ansible.builtin.service:
+    name: insecurecockroachdb
+    state: stopped
+  when: cockroach_bin.stat.exists
+
+- name: Make sure old CockroachDB data is deleted
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - cockroach-data
+    - /var/lib/cockroach/cockroach-data/
+
 - name: Install CockroachDB, if it isn't already installed
   ansible.builtin.include_tasks: install_cockroach.yml
   when: not cockroach_bin.stat.exists
