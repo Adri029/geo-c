@@ -1,17 +1,21 @@
+- name: Install curl
+  ansible.builtin.apt:
+    name: curl
+
+- name: Make sure there's no CockroachDB download
+  ansible.builtin.file:
+    path: cockroach-v22.1.11.linux-amd64
+    state: absent
+
 - name: Install CockroachDB, if it isn't already installed
   ansible.builtin.shell: |
-    curl https://binaries.cockroachdb.com/cockroach-v22.1.10.linux-amd64.tgz | tar -xz
-    cp -i cockroach-v22.1.10.linux-amd64/cockroach /usr/local/bin/
+    curl https://binaries.cockroachdb.com/cockroach-v22.1.11.linux-amd64.tgz | tar -xz
+    sudo cp cockroach-v22.1.11.linux-amd64/cockroach /usr/local/bin/
 
     mkdir -p /usr/local/lib/cockroach
-    cp -i cockroach-v22.1.10.linux-amd64/lib/libgeos.so /usr/local/lib/cockroach/
-    cp -i cockroach-v22.1.10.linux-amd64/lib/libgeos_c.so /usr/local/lib/cockroach/
+    cp cockroach-v22.1.10.linux-amd64/lib/libgeos.so /usr/local/lib/cockroach/
+    cp cockroach-v22.1.10.linux-amd64/lib/libgeos_c.so /usr/local/lib/cockroach/
 
     mkdir /var/lib/cockroach
     useradd cockroach
     chown cockroach /var/lib/cockroach
-
-- name: Copy service file
-  ansible.builtin.template:
-    src: insecurecockroachdb.service.j2
-    dest: /etc/systemd/system/insecurecockroachdb.service

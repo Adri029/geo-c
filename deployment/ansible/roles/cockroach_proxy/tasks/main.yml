@@ -1,6 +1,9 @@
 - name: Install HAProxy
-  ansible.builtin.apt: 
-    name: haproxy
+  ansible.builtin.apt:
+    pkg:
+      - curl
+      - haproxy
+    
 
 - name: Check if CockroachDB is already installed
   ansible.builtin.stat:
@@ -24,7 +27,7 @@
 - name: Replace configuration file with new one
   ansible.builtin.copy:
     src: haproxy.cfg
-    dest: /etc/haproxy/haproxy.cfg 
+    dest: /etc/haproxy/haproxy.cfg
     remote_src: yes
 
 - name: Restart HAProxy service

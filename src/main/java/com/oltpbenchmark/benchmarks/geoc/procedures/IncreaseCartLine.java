@@ -84,7 +84,6 @@ public class IncreaseCartLine extends GeoCProcedure {
         int districtID = GeoCUtil.randomNumber(terminalDistrictLowerID, terminalDistrictUpperID, gen);
         int customerID = GeoCUtil.getCustomerID(gen);
 
-        int numItems = GeoCUtil.randomNumber(5, 15, gen);
         int itemID = GeoCUtil.getItemID(gen);
         int supplierWarehouseID;
         int orderQuantity = GeoCUtil.randomNumber(1, 10, gen);
@@ -106,13 +105,13 @@ public class IncreaseCartLine extends GeoCProcedure {
             itemID = GeoCConfig.INVALID_ITEM_ID;
         }
 
-        increaseCartLineTransaction(terminalWarehouseID, districtID, customerID, numItems, allLocal, itemID,
+        increaseCartLineTransaction(terminalWarehouseID, districtID, customerID, allLocal, itemID,
                 supplierWarehouseID, orderQuantity, conn);
 
     }
 
     private void increaseCartLineTransaction(int w_id, int d_id, int c_id,
-            int o_ol_cnt, int o_all_local, int itemID,
+            int o_all_local, int itemID,
             int supplierWarehouseID, int orderQuantity, Connection conn) throws SQLException {
 
         getCustomer(conn, w_id, d_id, c_id);

@@ -1,4 +1,4 @@
-{% set advertise_addr = hostvars[ansible_hostname]['db_address'] + ":" + "{0:d}".format(hostvars[ansible_hostname]['db_port']) %}
+{% set advertise_addr = hostvars[inventory_hostname]['db_address'] + ":" + "{0:d}".format(hostvars[inventory_hostname]['db_port']) %}
 
 {% set addresses = [] %}
 {% for host in groups['cockroachdb'] %}

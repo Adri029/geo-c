@@ -71,11 +71,33 @@ public class DecreaseCartLine extends GeoCProcedure {
             "DELETE FROM " + GeoCConstants.TABLENAME_SHOPPING_CART_LINE +
                     " WHERE _SCL_W_ID = ? AND _SCL_D_ID = ? AND _SCL_C_ID = ? AND _SCL_I_ID = ?");
 
+    public final SQLStmt stmtChooseCartLineSQL = new SQLStmt(
+            "SELECT _SCL_C_ID, _SCL_D_ID FROM " +  GeoCConstants.TABLENAME_SHOPPING_CART_LINE +
+                    " WHERE _SCL_W_ID = ? AND _SCL_D_ID >= ? AND _SCL_D_ID <= ?" + 
+                    " ORDER BY RANDOM()" +
+                    " LIMIT 1");
+
     public void run(Connection conn, Random gen, int terminalWarehouseID, int numWarehouses,
             int terminalDistrictLowerID, int terminalDistrictUpperID, GeoCWorker w) throws SQLException {
 
-        int districtID = GeoCUtil.randomNumber(terminalDistrictLowerID, terminalDistrictUpperID, gen);
-        int customerID = GeoCUtil.getCustomerID(gen);
+        int districtID;
+        int customerID;
+
+        try (PreparedStatement stmtChooseCartLine = this.getPreparedStatement(conn, stmtChooseCartLineSQL)) {
+            stmtChooseCartLine.setInt(1, terminalWarehouseID);
+            stmtChooseCartLine.setInt(2, terminalDistrictLowerID);
+            stmtChooseCartLine.setInt(3, terminalDistrictUpperID);
+
+            try (ResultSet rs = stmtChooseCartLine.executeQuery()) {
+                if (!rs.next()) {
+                    throw new UserAbortException("No shopping cart lines found in W_ID=" + terminalWarehouseID + 
+                        " and " + terminalDistrictLowerID + " <= D_ID <= " + terminalDistrictUpperID + "!");
+                }
+
+                customerID = rs.getInt("_SCL_C_ID");
+                districtID = rs.getInt("_SCL_D_ID");
+            }
+        }
 
         int item = GeoCUtil.randomNumber(0,10000,gen);
         int removeQuantity = GeoCUtil.randomNumber(1, 10, gen);
