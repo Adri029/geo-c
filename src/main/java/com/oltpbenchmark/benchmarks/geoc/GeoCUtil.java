@@ -113,6 +113,7 @@ public class GeoCUtil {
         //warehouse unique items
         int number_wui = number_hotspots / 10;
         if (hotspots.isEmpty() || now.isAfter(GeoCUtil.current_cycle.plusNanos(GeoCUtil.cycle_duration))){
+            GeoCUtil.current_cycle = now;
             List<Integer> newHotspots = new ArrayList<>();
             while (number_hotspots > number_wui) {
                 //bound is exclusive -> ]GeoCConfig.configWhseSpecificItems,GeoCConfig.configItemCount]
@@ -126,7 +127,6 @@ public class GeoCUtil {
             }
 
             GeoCUtil.hotspots = newHotspots;
-            GeoCUtil.current_cycle = now;
         }
 
         int prob = r.nextInt(1,101);
