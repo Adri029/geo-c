@@ -58,6 +58,11 @@
   ansible.builtin.include_tasks: install_cockroach.yml
   when: not cockroach_bin.stat.exists
 
+- name: Copy service file
+  ansible.builtin.template:
+    src: insecurecockroachdb.service.j2
+    dest: /etc/systemd/system/insecurecockroachdb.service
+
 - name: Start CockroachDB service
   ansible.builtin.service:
     name: insecurecockroachdb
