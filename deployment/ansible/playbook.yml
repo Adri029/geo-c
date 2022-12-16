@@ -17,6 +17,17 @@
   roles:
     - cockroach
 
+- name: Initialize CockroachDB cluster
+  hosts: cockroachdb1
+  become: true
+  any_errors_fatal: true
+  tasks:
+    - name: Initialize cluster and database (only on the first node)
+      ansible.builtin.shell: |
+        cockroach init --insecure --host=localhost:26257
+        cockroach sql --execute="CREATE DATABASE benchbase;" --insecure --host=localhost:26257
+      ignore_errors: true
+
 - name: Deploy proxy for CockroachDB
   hosts: haproxy
   become: true
