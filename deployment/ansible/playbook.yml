@@ -2,18 +2,22 @@
 - name: Setup OS
   hosts: all
   become: true
+  # max_fail_percentage: 0
+  any_errors_fatal: true
   roles:
     - common
 
 - name: Install PostgreSQL
   hosts: postgres
   become: true
+  any_errors_fatal: true
   roles:
     - postgres
 
 - name: Install CockroachDB
   hosts: cockroachdb
   become: true
+  any_errors_fatal: true
   roles:
     - cockroach
 
@@ -31,5 +35,6 @@
 - name: Deploy proxy for CockroachDB
   hosts: haproxy
   become: true
+  any_errors_fatal: true
   roles:
     - cockroach_proxy
