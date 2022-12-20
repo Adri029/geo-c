@@ -24,6 +24,7 @@ import com.oltpbenchmark.util.RandomGenerator;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -103,7 +104,7 @@ public class GeoCUtil {
     private static final int C_LAST_RUN_C = 223; // in range [0, 255]
 
     private static LocalDateTime current_cycle = LocalDateTime.now();
-    private static int cycle_duration = 300000; //300ms
+    private static long cycle_duration_milis = 500;
     private static List<Integer> hotspots = new ArrayList<>();
 
     public static int getItemID(Random r) {
@@ -112,7 +113,7 @@ public class GeoCUtil {
 
         //warehouse unique items
         int number_wui = number_hotspots / 10;
-        if (hotspots.isEmpty() || now.isAfter(GeoCUtil.current_cycle.plusNanos(GeoCUtil.cycle_duration))){
+        if (hotspots.isEmpty() || now.isAfter(GeoCUtil.current_cycle.plus(GeoCUtil.cycle_duration_milis, ChronoUnit.MILLIS))){
             GeoCUtil.current_cycle = now;
             List<Integer> newHotspots = new ArrayList<>();
             while (number_hotspots > number_wui) {
