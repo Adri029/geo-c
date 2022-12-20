@@ -49,7 +49,8 @@ public enum DatabaseType {
     SQLITE(true, false),
     SQLSERVER(true, false),
     TIMESTEN(true, false),
-    PHOENIX(true, true);
+    PHOENIX(true, true),
+    YUGABYTEDB(false, false);
 
 
     DatabaseType(boolean escapeNames, boolean includeColNames) {

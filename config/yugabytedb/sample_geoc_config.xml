@@ -1,0 +1,57 @@
+<?xml version="1.0"?>
+<parameters>
+
+    <!-- Connection details -->
+    <type>YUGABYTEDB</type>
+    <driver>com.yugabyte.Driver</driver>
+    <url>jdbc:yugabytedb://localhost:5433/benchbase?load-balance=true</url>
+    <username>yugabyte</username>
+    <password>yugabyte</password>
+    <isolation>TRANSACTION_SERIALIZABLE</isolation>
+    <batchsize>128</batchsize>
+
+    <!-- Scale factor is the number of warehouses in GeoC -->
+    <scalefactor>1</scalefactor>
+
+    <!-- The workload -->
+    <terminals>1</terminals>
+    <works>
+        <work>
+            <time>60</time>
+            <!-- <rate>10000</rate> -->
+            <rate>unlimited</rate>
+            <weights>8.1,7.74,0.72,0.72,0.72,41.74,30.26,9.6,0.4</weights>
+        </work>
+    </works>
+
+    <!-- GeoC specific -->
+    <transactiontypes>
+        <transactiontype>
+            <name>ApproveCart</name>
+        </transactiontype>
+        <transactiontype>
+            <name>Payment</name>
+        </transactiontype>
+        <transactiontype>
+            <name>OrderStatus</name>
+        </transactiontype>
+        <transactiontype>
+            <name>Delivery</name>
+        </transactiontype>
+        <transactiontype>
+            <name>StockLevel</name>
+        </transactiontype>
+        <transactiontype>
+            <name>IncreaseCartLine</name>
+        </transactiontype>
+        <transactiontype>
+            <name>DecreaseCartLine</name>
+        </transactiontype>
+        <transactiontype>
+            <name>CheckCart</name>
+        </transactiontype>
+        <transactiontype>
+            <name>Restock</name>
+        </transactiontype>
+    </transactiontypes>
+</parameters>
