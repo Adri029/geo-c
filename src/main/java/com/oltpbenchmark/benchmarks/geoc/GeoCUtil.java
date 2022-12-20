@@ -23,15 +23,21 @@ import com.oltpbenchmark.util.RandomGenerator;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import static com.oltpbenchmark.benchmarks.geoc.GeoCConfig.*;
 
 public class GeoCUtil {
+    
+    private static final Logger LOG = LoggerFactory.getLogger(GeoCUtil.class);
 
     /**
      * Creates a Customer object from the current row in the given ResultSet.
@@ -128,6 +134,7 @@ public class GeoCUtil {
             }
 
             GeoCUtil.hotspots = newHotspots;
+            LOG.debug("Generated new hotspots, took " + Duration.between(GeoCUtil.current_cycle, LocalDateTime.now()));
         }
 
         int prob = r.nextInt(1,101);
