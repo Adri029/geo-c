@@ -34,12 +34,14 @@
         paths: "{{ benchmark_folder }}/configs"
       register: configs
 
-    - name: Run benchmark for all configs
+    - name: Compile the benchmark
       ansible.builtin.shell: |
-        ./mvnw clean compile exec:java -P {{ database }} \
-          -Dexec.args="-d results/{{ database }}/{{ benchmark }}/{{ item.path | basename | splitext | first }} -b {{ benchmark }} -c {{ item.path }} --create=true --load=true --execute=true"
+        ./mvnw clean compile -P {{ database }}
       args:
         chdir: "{{ benchmark_folder }}"
+
+    - name: Run benchmark for all configs
+      include_tasks: tasks/run_benchmark.yml
       loop: "{{ configs.files }}"
 
     - name: Fetch results

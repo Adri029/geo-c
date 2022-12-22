@@ -1,0 +1,17 @@
+---
+- name: Generate data for benchmark
+  ansible.builtin.shell: |
+    ./mvnw exec:java -P {{ database }} \
+      -Dexec.args="-d results/{{ database }}/{{ benchmark }}/{{ item.path | basename | splitext | first }} -b {{ benchmark }} -c {{ item.path }} --create=true --load=true"
+  args:
+    chdir: "{{ benchmark_folder }}"
+  when: (generate is not defined) or (generate|bool == True)
+
+- name: Execute the benchmark
+  ansible.builtin.shell: |
+    ./mvnw exec:java -P {{ database }} \
+      -Dexec.args="-d results/{{ database }}/{{ benchmark }}/{{ item.path | basename | splitext | first }} -b {{ benchmark }} -c {{ item.path }} --execute=true"
+  args:
+    chdir: "{{ benchmark_folder }}"
+  when: (execute is not defined) or (execute|bool == True)
+  

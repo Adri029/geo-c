@@ -11,6 +11,11 @@ DATABASE=postgres
 
 INVENTORY="inventories/postgres_tester.ini"
 
+GENERATE=True
+EXECUTE=True
+
 # Run the playbook.
 
-ansible-playbook -i $INVENTORY --extra-vars="database=$DATABASE benchmark=$BENCHMARK" playbook.yml
+ansible-playbook -i $INVENTORY \
+    --extra-vars="database=$DATABASE benchmark=$BENCHMARK generate=$GENERATE execute=$EXECUTE" \
+    playbook.yml
