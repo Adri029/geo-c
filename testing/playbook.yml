@@ -49,3 +49,4 @@
         src: "{{ benchmark_folder }}/results"
         dest: remote_results
         mode: pull
+      when: (execute is not defined) or (execute|bool == True)
