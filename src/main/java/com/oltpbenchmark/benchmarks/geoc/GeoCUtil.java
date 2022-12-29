@@ -160,11 +160,11 @@ public class GeoCUtil {
     }
 
     public static String getNonUniformRandomLastNameForRun(Random r) {
-        return getLastName(nonUniformRandom(255, C_LAST_RUN_C, 0, 999, r));
+        return getLastName(nonUniformRandom(255, C_LAST_RUN_C, 0, 299, r));
     }
 
     public static String getNonUniformRandomLastNameForLoad(Random r) {
-        return getLastName(nonUniformRandom(255, C_LAST_LOAD_C, 0, 999, r));
+        return getLastName(nonUniformRandom(255, C_LAST_LOAD_C, 0, 299, r));
     }
 
     public static int randomNumber(int min, int max, Random r) {
