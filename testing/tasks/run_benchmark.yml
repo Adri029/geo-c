@@ -1,0 +1,26 @@
+---
+- name: Set result output folder
+  ansible.builtin.set_fact:
+    result_output: "results/{{ database }}/{{ benchmark }}/{{ item.path | basename | splitext | first }}"
+
+- name: Generate data for benchmark
+  ansible.builtin.shell: |
+    ./mvnw exec:java -P {{ database }} \
+      -Dexec.args="-d {{ result_output }} -b {{ benchmark }} -c {{ item.path }} --create=true --load=true"
+  args:
+    chdir: "{{ benchmark_folder }}"
+  when: (generate is not defined) or (generate|bool == True)
+
+- name: Execute the benchmark
+  ansible.builtin.shell: |
+    ./mvnw exec:java -P {{ database }} \
+      -Dexec.args="-d {{ result_output }} -b {{ benchmark }} -c {{ item.path }} --execute=true"
+  args:
+    chdir: "{{ benchmark_folder }}"
+  when: (execute is not defined) or (execute|bool == True)
+  register: benchmark_output
+
+- name: Output benchmark log to file
+  ansible.builtin.copy:
+    content: "{{ benchmark_output.stdout }}"
+    dest: "{{ benchmark_folder }}/{{ result_output }}/{{ ansible_date_time.iso8601 }}-log.txt"

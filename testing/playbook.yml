@@ -1,0 +1,57 @@
+---
+- name: Run tests
+  hosts: all
+
+  # become: true
+  any_errors_fatal: true
+
+  vars:
+    # Variables defined by command line.
+    # database: "postgres"
+    # benchmark: "tpcc"
+
+    # Local paths.
+    configs_folder: "{{ playbook_dir }}/configs/{{ database }}/{{ benchmark }}/*.xml"
+
+    # Remote paths.
+    benchmark_folder: "/home/gsd/geo-c-java"
+
+  tasks:
+    - name: Delete old configs if they exist
+      ansible.builtin.file:
+        path: "{{ benchmark_folder }}/configs"
+        state: absent
+
+    - name: Create config folder
+      ansible.builtin.file:
+        path: "{{ benchmark_folder }}/configs"
+        state: directory
+
+    - name: Copy local config files to remote
+      ansible.builtin.copy:
+        src: "{{ item }}"
+        dest: "{{ benchmark_folder }}/configs/{{ item | basename }}"
+        owner: gsd
+      with_fileglob: "{{ configs_folder }}"
+
+    - name: Read the names of all config files
+      ansible.builtin.find:
+        paths: "{{ benchmark_folder }}/configs"
+      register: configs
+
+    - name: Compile the benchmark
+      ansible.builtin.shell: |
+        ./mvnw clean compile -P {{ database }}
+      args:
+        chdir: "{{ benchmark_folder }}"
+
+    - name: Run benchmark for all configs
+      include_tasks: tasks/run_benchmark.yml
+      loop: "{{ configs.files }}"
+
+    - name: Fetch results
+      ansible.posix.synchronize:
+        src: "{{ benchmark_folder }}/results"
+        dest: remote_results
+        mode: pull
+      when: (execute is not defined) or (execute|bool == True)
