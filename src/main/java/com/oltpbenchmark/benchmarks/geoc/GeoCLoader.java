@@ -486,6 +486,9 @@ public class GeoCLoader extends Loader<GeoCBenchmark> {
                     }
                 }
             }
+
+            indPrepStmt.executeBatch();
+            indPrepStmt.clearBatch();
         } catch (SQLException se) {
             LOG.error(se.getMessage());
         }
