@@ -10,13 +10,20 @@
     # database: "postgres"
     # benchmark: "tpcc"
 
+    username: "ruir"
+
     # Local paths.
     configs_folder: "{{ playbook_dir }}/configs/{{ database }}/{{ benchmark }}/*.xml"
 
     # Remote paths.
-    benchmark_folder: "/home/gsd/geo-c-java"
+    benchmark_folder: "/home/{{ username }}/geo-c-java"
 
   tasks:
+    - name: Delete old results if they exist
+      ansible.builtin.file:
+        path: "{{ benchmark_folder }}/results"
+        state: absent
+
     - name: Delete old configs if they exist
       ansible.builtin.file:
         path: "{{ benchmark_folder }}/configs"
@@ -31,7 +38,7 @@
       ansible.builtin.copy:
         src: "{{ item }}"
         dest: "{{ benchmark_folder }}/configs/{{ item | basename }}"
-        owner: gsd
+        owner: "{{ username }}"
       with_fileglob: "{{ configs_folder }}"
 
     - name: Read the names of all config files
