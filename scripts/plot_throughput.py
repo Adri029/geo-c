@@ -22,6 +22,8 @@ for i, path in enumerate(csv_paths):
     # Plot the data
     plt.plot(times, throughputs, label=f"File {i+1}")
 
+plt.title(", ".join(csv_paths[0].split("/")[-4:-1]))
+
 # Add a legend and show the plot
 plt.legend()
 plt.xlabel("Time (s)")
