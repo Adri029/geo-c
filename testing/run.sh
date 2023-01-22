@@ -8,6 +8,7 @@
 
 BENCHMARK=tpcc
 DATABASE=postgres
+USERNAME=ruir
 RUNS=5
 
 INVENTORY="inventories/postgres_tester.ini"
@@ -27,6 +28,6 @@ for i in $(seq $RUNS); do
     fi
 
     ansible-playbook -i $INVENTORY \
-        --extra-vars="database=$DATABASE benchmark=$BENCHMARK generate=$GENERATE execute=$EXECUTE" \
+        --extra-vars="database=$DATABASE benchmark=$BENCHMARK username=$USERNAME generate=$GENERATE execute=$EXECUTE" \
         playbook.yml
 done

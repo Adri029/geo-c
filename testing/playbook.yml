@@ -9,8 +9,7 @@
     # Variables defined by command line.
     # database: "postgres"
     # benchmark: "tpcc"
-
-    username: "ruir"
+    # username: "ruir"
 
     # Local paths.
     configs_folder: "{{ playbook_dir }}/configs/{{ database }}/{{ benchmark }}/*.xml"
