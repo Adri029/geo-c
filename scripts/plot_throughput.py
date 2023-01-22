@@ -1,7 +1,7 @@
 import argparse
 import csv
-import sys
 
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 from numpy.typing import NDArray
@@ -11,9 +11,13 @@ from numpy.typing import NDArray
 # -------------------------------------
 
 parser = argparse.ArgumentParser()
-parser.add_argument("result_csv_paths", nargs="+")
 parser.add_argument(
-    "-o", "--output", help="Name of output file", required=False, default=None
+    "result_csv_paths",
+    nargs="+",
+    help="the `result.csv` files that are result of a Benchbase execution",
+)
+parser.add_argument(
+    "-o", "--output", help="name of output file", required=False, default=None
 )
 
 args = parser.parse_args()
@@ -56,6 +60,8 @@ for i, path in enumerate(args.result_csv_paths):
 # -------------------------------------
 # Plotting
 # -------------------------------------
+
+mpl.rcParams["font.family"] = "Inter"
 
 for key, [count, times, throughputs] in aggregator.items():
     plt.plot(times, throughputs / count, label=key)
