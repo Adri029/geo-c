@@ -14,7 +14,7 @@
 - name: Execute the benchmark
   ansible.builtin.shell: |
     ./mvnw exec:java -P {{ database }} \
-      -Dexec.args="-d {{ result_output }} -b {{ benchmark }} -c {{ item.path }} --execute=true"
+      -Dexec.args="-d {{ result_output }} -b {{ benchmark }} -c {{ item.path }} -jh {{ result_output }}/{{ ansible_date_time.iso8601 }}-histograms.json --execute=true"
   args:
     chdir: "{{ benchmark_folder }}"
   when: (execute is not defined) or (execute|bool == True)
