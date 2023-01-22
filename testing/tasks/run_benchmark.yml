@@ -6,7 +6,7 @@
 - name: Generate data for benchmark
   ansible.builtin.shell: |
     ./mvnw exec:java -P {{ database }} \
-      -Dexec.args="-d {{ result_output }} -b {{ benchmark }} -c {{ item.path }} --create=true --clear=true --load=true"
+      -Dexec.args="-b {{ benchmark }} -c {{ item.path }} --create=true --clear=true --load=true"
   args:
     chdir: "{{ benchmark_folder }}"
   when: (generate is not defined) or (generate|bool == True)
