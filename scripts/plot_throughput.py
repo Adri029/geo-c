@@ -71,6 +71,9 @@ plt.legend()
 plt.xlabel("Time (s)")
 plt.ylabel("Throughput (txn/s)")
 
+ax = plt.gca()
+ax.set_ylim([0, 1000])  # Adjust the maximum as necessary.
+
 if args.output is not None:
     plt.savefig(args.output, bbox_inches="tight")
 else:
