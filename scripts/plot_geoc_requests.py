@@ -123,7 +123,10 @@ bar4 = ax.bar(
 )
 
 ax.set_ylabel("Percentage of requests (%)")
-ax.legend()
+
+box = ax.get_position()
+ax.set_position([box.x0, box.y0 + box.height * 0.1, box.width, box.height * 0.9])
+ax.legend(loc="upper center", bbox_to_anchor=(0.5, -0.18), ncol=4)
 
 threshold = 2
 for bar in [bar1, bar2, bar3, bar4]:
