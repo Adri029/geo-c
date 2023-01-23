@@ -95,7 +95,7 @@ bar1 = ax.bar(
     completed,
     width=bar_width,
     label="Completed",
-    color="#9dd866",
+    color="#b1d760",
 )
 bar2 = ax.bar(
     TRANSACTIONS,
@@ -103,7 +103,7 @@ bar2 = ax.bar(
     bottom=completed,
     width=bar_width,
     label="Aborted",
-    color="#ca472f",
+    color="#f67e6d",
 )
 bar3 = ax.bar(
     TRANSACTIONS,
@@ -111,7 +111,7 @@ bar3 = ax.bar(
     bottom=[i + j for i, j in zip(completed, aborted)],
     width=bar_width,
     label="Rejected",
-    color="#f6c85f",
+    color="#f9b65d",
 )
 bar4 = ax.bar(
     TRANSACTIONS,
@@ -119,7 +119,7 @@ bar4 = ax.bar(
     bottom=[i + j + k for i, j, k in zip(completed, aborted, rejected)],
     width=bar_width,
     label="Unexpected",
-    color="#0b84a5",
+    color="#7caed5",
 )
 
 ax.set_ylabel("Percentage of requests (%)")
