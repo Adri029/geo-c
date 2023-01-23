@@ -6,8 +6,8 @@
 
 # Variables to change!
 
-BENCHMARK=tpcc
-DATABASE=postgres
+DATABASES=(postgres) #cockroachdb)
+BENCHMARKS=(geoc tpcc)
 USERNAME=ruir
 RUNS=5
 
@@ -18,16 +18,24 @@ EXECUTE=True
 
 # Run the playbook.
 
-for i in $(seq $RUNS); do
-    # If executing more than one run, sleep in-between tests.
-    if [ $i -gt 1 ]; then
-        echo "------------------------"
-        echo "Sleeping before test $i!"
-        echo "------------------------"
-        sleep 1m
-    fi
+for database in ${DATABASES[@]}; do
+    for benchmark in ${BENCHMARKS[@]}; do
+        echo "-----------------------------------"
+        echo "Starting $benchmark on $database..."
+        echo "-----------------------------------"
 
-    ansible-playbook -i $INVENTORY \
-        --extra-vars="database=$DATABASE benchmark=$BENCHMARK username=$USERNAME generate=$GENERATE execute=$EXECUTE" \
-        playbook.yml
+        for i in $(seq $RUNS); do
+            # If executing more than one run, sleep in-between tests.
+            if [ $i -gt 1 ]; then
+                echo "------------------------"
+                echo "Sleeping before test $i!"
+                echo "------------------------"
+                sleep 1m
+            fi
+
+            ansible-playbook -i $INVENTORY \
+                --extra-vars="database=$database benchmark=$benchmark username=$USERNAME generate=$GENERATE execute=$EXECUTE" \
+                playbook.yml
+        done
+    done
 done
