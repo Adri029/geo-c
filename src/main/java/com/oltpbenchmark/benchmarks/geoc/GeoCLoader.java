@@ -131,7 +131,7 @@ public class GeoCLoader extends Loader<GeoCBenchmark> {
                         LOG.debug("Starting to load ORDER LINES {}", w_id);
                     }
                     // ORDER LINES
-                    loadOrderLines(conn, w_id, GeoCConfig.configDistPerWhse, GeoCConfig.configCustPerDist);
+                    loadOrderLines(conn, w_id, GeoCConfig.configDistPerWhse, GeoCConfig.configCustPerDist, GeoCConfig.configWhseSpecificItems);
 
                 }
 
@@ -706,7 +706,7 @@ public class GeoCLoader extends Loader<GeoCBenchmark> {
 
     }
 
-    protected void loadOrderLines(Connection conn, int w_id, int districtsPerWarehouse, int customersPerDistrict) {
+    protected void loadOrderLines(Connection conn, int w_id, int districtsPerWarehouse, int customersPerDistrict, int whseSpecificItems) {
 
         int k = 0;
 
@@ -725,6 +725,12 @@ public class GeoCLoader extends Loader<GeoCBenchmark> {
                         order_line.ol_o_id = c;
                         order_line.ol_number = l; // ol_number
                         order_line.ol_i_id = GeoCUtil.randomNumber(1, GeoCConfig.configItemCount, benchmark.rng());
+                        
+                        // Keep generating an item ID while the item is specific to a different warehouse.
+                        while (order_line.ol_i_id <= whseSpecificItems && (order_line.ol_i_id % numWarehouses) + 1 != w_id) {
+                            order_line.ol_i_id = GeoCUtil.randomNumber(1, GeoCConfig.configItemCount, benchmark.rng());
+                        }
+                        
                         if (order_line.ol_o_id < FIRST_UNPROCESSED_O_ID) {
                             order_line.ol_delivery_d = new Timestamp(System.currentTimeMillis());
                             order_line.ol_amount = 0;
