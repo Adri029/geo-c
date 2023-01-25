@@ -9,6 +9,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 from numpy.typing import NDArray
 
+mpl.rcParams["font.family"] = "Inter"
+
 # -------------------------------------
 # Arguments
 # -------------------------------------
@@ -77,12 +79,12 @@ def get_transaction_index(name: str) -> int:
 nrows, ncols = (3, 2)
 fig, axs = plt.subplots(nrows, ncols)
 charts = [
-    ("postgres", "geoc", (0, 0)),
-    ("cockroachdb", "geoc", (1, 0)),
-    ("cockroachdb-triple", "geoc", (2, 0)),
-    ("postgres", "tpcc", (0, 1)),
-    ("cockroachdb", "tpcc", (1, 1)),
-    ("cockroachdb-triple", "tpcc", (2, 1)),
+    ("postgres", "tpcc", (0, 0)),
+    ("cockroachdb", "tpcc", (1, 0)),
+    ("cockroachdb-triple", "tpcc", (2, 0)),
+    ("postgres", "geoc", (0, 1)),
+    ("cockroachdb", "geoc", (1, 1)),
+    ("cockroachdb-triple", "geoc", (2, 1)),
 ]
 
 for (database, benchmark, index) in charts:
@@ -122,8 +124,6 @@ for (database, benchmark, index) in charts:
     # -------------------------------------
     # Plotting
     # -------------------------------------
-
-    mpl.rcParams["font.family"] = "Inter"
 
     bar_width = 0.8
     bar1 = axs[index].bar(
@@ -173,7 +173,7 @@ for (database, benchmark, index) in charts:
     axs[index].set_ylim([0, 100])
     axs[index].set_title(f"{database} / {benchmark} / {args.results_type}")
     # axs[index].tick_params(labelrotation=25, ha="right")
-    plt.setp(axs[index].get_xticklabels(), rotation=30, ha="right", rotation_mode="anchor")
+    plt.setp(axs[index].get_xticklabels(), rotation=25, ha="right", rotation_mode="anchor")
 
 plt.subplots_adjust(wspace=0.05)
 plt.legend(loc="center right", bbox_to_anchor=(1.35, 1.75))

@@ -63,16 +63,25 @@ for i, path in enumerate(args.result_csv_paths):
 
 mpl.rcParams["font.family"] = "Inter"
 
-for key, [count, times, throughputs] in aggregator.items():
-    plt.plot(times, throughputs / count, label=key)
+NUM_COLORS = len(aggregator)
+LINE_STYLES = ["solid", "dashed", "dashdot", "dotted"]
+NUM_STYLES = len(LINE_STYLES)
+
+cm = plt.get_cmap("gist_rainbow")
+ax = plt.gca()
+
+for i, (key, [count, times, throughputs]) in enumerate(aggregator.items()):
+    lines = ax.plot(times, throughputs / count, label=key)
+    # lines[0].set_color(cm(i // NUM_STYLES * float(NUM_STYLES) / NUM_COLORS))
+    # lines[0].set_linestyle(LINE_STYLES[i % NUM_STYLES])
 
 plt.title("Throughput chart")
 plt.legend()
 plt.xlabel("Time (s)")
 plt.ylabel("Throughput (txn/s)")
 
-ax = plt.gca()
-ax.set_ylim([0, 1000])  # Adjust the maximum as necessary.
+ax.set_ylim([0, 1500])  # Adjust the maximum as necessary.
+ax.set_xlim([0, 295])  # Adjust the maximum as necessary.
 
 if args.output is not None:
     plt.savefig(args.output, bbox_inches="tight")
