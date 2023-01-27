@@ -75,13 +75,16 @@ for i, (key, [count, times, throughputs]) in enumerate(aggregator.items()):
     # lines[0].set_color(cm(i // NUM_STYLES * float(NUM_STYLES) / NUM_COLORS))
     # lines[0].set_linestyle(LINE_STYLES[i % NUM_STYLES])
 
-plt.title("Throughput chart")
+# plt.title("Throughput chart")
 plt.legend()
 plt.xlabel("Time (s)")
 plt.ylabel("Throughput (txn/s)")
 
-ax.set_ylim([0, 1500])  # Adjust the maximum as necessary.
+ax.set_ylim([0, 2000])  # Adjust the maximum as necessary.
 ax.set_xlim([0, 295])  # Adjust the maximum as necessary.
+
+fig = plt.gcf()
+fig.set_size_inches(8, 4)
 
 if args.output is not None:
     plt.savefig(args.output, bbox_inches="tight")
