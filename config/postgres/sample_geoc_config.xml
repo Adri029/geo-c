@@ -4,7 +4,7 @@
     <!-- Connection details -->
     <type>POSTGRES</type>
     <driver>org.postgresql.Driver</driver>
-    <url>jdbc:postgresql://cloud59.cluster.lsd.di.uminho.pt:5432/benchbase?sslmode=disable&amp;ApplicationName=geoc&amp;reWriteBatchedInserts=true</url>
+    <url>jdbc:postgresql://localhost:5432/benchbase?sslmode=disable&amp;ApplicationName=geoc&amp;reWriteBatchedInserts=true</url>
     <username>postgres</username>
     <password>postgres</password>
     <isolation>TRANSACTION_SERIALIZABLE</isolation>
@@ -17,7 +17,7 @@
     <terminals>1</terminals>
     <works>
         <work>
-            <time>60</time>
+            <time>10</time>
             <!-- <rate>10000</rate> -->
             <rate>unlimited</rate>
             <weights>8.1,7.74,0.72,0.72,0.72,41.74,30.26,9.6,0.4</weights>
